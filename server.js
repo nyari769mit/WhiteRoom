@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const whiteRoom = require("./engine");
 
 const app = express();
@@ -11,6 +12,9 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "dashboard.html"));
+});
 // ─── Health Check ───────────────────────────────────────────
 app.get("/health", (req, res) => {
   res.json({ status: "ok", app: "white-room", version: "1.0.0" });
