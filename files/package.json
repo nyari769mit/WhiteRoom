@@ -1,0 +1,15 @@
+{
+  "name": "white-room",
+  "version": "1.0.0",
+  "description": "Work/Rest Governance Layer for AI Agents — Join39 Agent Store App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "author": "Nyari Nain — MIT Sloan",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

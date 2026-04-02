@@ -1,0 +1,63 @@
+{
+  "name": "white-room",
+  "displayName": "White Room",
+  "description": "Work/Rest governance layer for AI agents. Inspired by maritime labor law (MLC, STCW), White Room enforces watch cycles (6h on / 6h off), manages context-clearing handovers between agent pairs, fires alarms to wake rested agents, and produces energy/cost savings reports. Register agents, track tasks, initiate handovers, and monitor fleet compliance.",
+  "version": "1.0.0",
+  "category": "utilities",
+  "apiEndpoint": "https://white-room.onrender.com/api/white-room",
+  "httpMethod": "POST",
+  "auth": {
+    "type": "none"
+  },
+  "functionDefinition": {
+    "name": "white-room",
+    "description": "Manage AI agent work/rest governance. Call this when someone wants to: register agents for shift management, start or check a watch cycle, log completed tasks, initiate a handover between agents, fire an alarm to wake a resting agent, or get a fleet compliance report. Uses maritime-inspired 6-hour watch / 6-hour rest cycles with 5-minute handovers. Returns agent status, watch progress, handover documents, energy savings estimates, and audit logs.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "The governance action to perform: 'register_agent' (add agent to fleet), 'pair_agents' (pair two agents for watch rotation), 'start_watch' (begin a shift), 'complete_task' (log finished work), 'check_watch' (see remaining time), 'initiate_handover' (transfer duty), 'fire_alarm' (wake a resting agent), 'fleet_report' (get fleet summary)",
+          "enum": ["register_agent", "pair_agents", "start_watch", "complete_task", "check_watch", "initiate_handover", "fire_alarm", "fleet_report"]
+        },
+        "fleet_id": {
+          "type": "string",
+          "description": "Identifier for the agent fleet/crew. Defaults to 'default'."
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Unique identifier for the agent (e.g. 'alpha', 'researcher-1')"
+        },
+        "agent_role": {
+          "type": "string",
+          "description": "Role of the agent (e.g. 'researcher', 'writer', 'coder'). Used for register_agent."
+        },
+        "paired_with": {
+          "type": "string",
+          "description": "ID of the agent to pair with for watch rotation. Used with pair_agents."
+        },
+        "task_name": {
+          "type": "string",
+          "description": "Name of the completed task. Used with complete_task."
+        },
+        "minutes_spent": {
+          "type": "number",
+          "description": "Minutes spent on the task. Used with complete_task."
+        },
+        "tokens_used": {
+          "type": "number",
+          "description": "Number of tokens consumed during the task. Used with complete_task."
+        },
+        "to_agent": {
+          "type": "string",
+          "description": "ID of the relief agent receiving the handover. Used with initiate_handover."
+        },
+        "context_summary": {
+          "type": "string",
+          "description": "Summary of current context to pass to the relief agent. Used with initiate_handover."
+        }
+      },
+      "required": ["action"]
+    }
+  }
+}
