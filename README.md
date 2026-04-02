@@ -1,109 +1,77 @@
-# White Room
+# White Room — Join39 Agent Store App
 
-**A Work/Rest Governance Layer for AI Agents**
+**Work/Rest Governance Layer for AI Agents**
 
-White Room applies labor economics principles to AI agent orchestration. It tracks agent work sessions, enforces rest periods, manages overtime credits, and produces audit logs. Inspired by maritime labor regulations (MLC, STCW conventions).
+A maritime-inspired middleware that enforces labor scheduling for AI agents: 6-hour watch cycles, 5-minute handovers, 6-hour mandatory rest, and alarm-based wake-ups. Built for the [Join39](https://join39.org) Agent Store.
 
 ## Why
 
-AI agents in production run continuously without resource governance. No shift limits, no mandatory context clearing, no workload-based resource allocation. The result: context window bloat, compounding errors, unbounded API costs, and no audit trail.
+AI agents run continuously without resource governance. No shift limits, no context clearing, no audit trail. The result: context window bloat, compounding errors, unbounded API costs.
 
 White Room fixes this with three mechanisms:
+1. **Watch Cycles**: 6h on / 6h off, inspired by maritime watch schedules (MLC 2006, STCW)
+2. **Handovers**: Structured context transfer between agent pairs — what was done, what's pending, key findings
+3. **Energy Savings**: Context reset at handover reduces tokens from ~40K to ~2K per call
 
-1. **Work/Rest Scheduling**: Mandatory context clearing after configurable activity windows
-2. **Overtime Credits**: Agents exceeding shift limits earn 1.5x credits, redeemable as extended rest or extra token budget
-3. **Compensation Scaling**: Higher-priority tasks earn proportionally more credits
+## How It Works
 
-## Quick Start
-
-```python
-from src.tracker import WhiteRoom, TaskPriority
-
-# Create a fleet
-wr = WhiteRoom("story-crew")
-
-# Register agents with different shift limits
-researcher = wr.register_agent("researcher", role="Researcher", max_work_minutes=60, rest_minutes=15)
-writer = wr.register_agent("writer", role="Writer", max_work_minutes=45, rest_minutes=20)
-
-# Start working
-researcher.start_shift()
-researcher.complete_task("theme_research", minutes=25, tokens_used=1200)
-researcher.complete_task("source_analysis", minutes=20, tokens_used=1800)
-researcher.take_rest()  # Context cleared, ready for next shift
-
-# Writer goes into overtime
-writer.start_shift()
-writer.complete_task("draft", minutes=30, tokens_used=2000)
-writer.complete_task("revision", minutes=20, tokens_used=1500)
-# Writer is now in overtime: 50min > 45min limit
-# Earned 7.5 overtime credits (5min * 1.5x)
-writer.take_rest()  # Gets 27.5min rest (20 base + 7.5 bonus)
-
-# Fleet report
-report = wr.get_fleet_report()
-print(f"Overworked agents: {wr.get_overworked_agents()}")
-print(f"Available agents: {wr.get_idle_agents()}")
+```
+User → Join39 Agent → Installs White Room → Calls governance actions
+                                              ↓
+                                    register_agent → pair_agents → start_watch
+                                              ↓
+                                    complete_task → check_watch → initiate_handover
+                                              ↓
+                                    Agent enters White Room (rest) → alarm fires → repeat
 ```
 
-## Features
-
-- **Shift management**: Start/end shifts, auto-start on task completion
-- **Overtime tracking**: Configurable limits with 1.5x credit accrual
-- **Priority scaling**: CRITICAL (2x) and HIGH (1.5x) tasks earn more credits
-- **Forced rest**: Hard overtime cap triggers mandatory rest
-- **Token budgets**: Per-shift token limits with exceeded warnings
-- **Credit redemption**: Use credits for rest, token budget, or priority boosts
-- **Audit logging**: Full trail of shifts, tasks, and governance decisions
-- **Callbacks**: Hook into overtime and forced-rest events
-- **Fleet management**: WhiteRoom class manages multiple agents
-- **JSON export**: Serialize reports for dashboards and APIs
-
-## Testing
+## Local Setup
 
 ```bash
-python3 tests/test_tracker.py
+git clone https://github.com/nyari769mit/white-room-join39.git
+cd white-room-join39
+npm install
+node server.js        # Port 3000
 ```
 
-12 tests covering: basic shifts, overtime, forced rest, priority compensation, token budgets, credit redemption, auto-start, audit logs, fleet management, multiple shifts, JSON export, and callbacks.
-
-## Dashboard
-
-The React dashboard (`WhiteRoom_Dashboard.jsx`) provides a real-time simulation showing:
-- Agent status cards with shift progress bars
-- Fleet summary (work/rest/tokens/credits/energy saved)
-- Labor compliance percentages
-- Live audit log with color-coded events
-
-## Architecture
-
-```
-Agent Runtime (CrewAI / LangGraph / Join39)
-    |
-    v
-White Room Middleware
-    - AgentWorkTracker (per agent)
-    - WhiteRoom (fleet manager)
-    |
-    v
-Dashboard / API / Audit Log
+Test:
+```bash
+node test.js          # 15 tests
 ```
 
-## Project Structure
+## Deploy to Render
 
-```
-white-room/
-  src/
-    __init__.py
-    tracker.py          # Core: AgentWorkTracker + WhiteRoom
-  tests/
-    test_tracker.py     # 12 unit tests
-  dashboard/
-    WhiteRoom_Dashboard.jsx  # React dashboard
-  README.md
-```
+1. Push to GitHub
+2. Render → New → Web Service → Connect repo
+3. Build: `npm install` | Start: `node server.js` | Free tier
+4. Note URL (e.g., `https://white-room.onrender.com`)
+
+## Submit to Join39
+
+Go to [join39.org/apps/submit](https://join39.org/apps/submit):
+- **Name**: `white-room`
+- **Display Name**: White Room
+- **Category**: utilities
+- **API Endpoint**: `https://white-room.onrender.com/api/white-room`
+- **Method**: POST
+- **Auth**: none
+- **Parameters**: copy from `join39-manifest.json`
+
+## API Actions
+
+| Action | Description |
+|--------|-------------|
+| `register_agent` | Add an agent to the fleet |
+| `pair_agents` | Pair two agents for watch rotation |
+| `start_watch` | Begin a 6-hour shift |
+| `complete_task` | Log finished work with time and tokens |
+| `check_watch` | Check remaining shift time |
+| `initiate_handover` | Transfer context to relief agent |
+| `fire_alarm` | Wake a resting agent |
+| `fleet_report` | Get fleet status and energy savings |
 
 ---
 
-*Built by Nyari Nain | MIT Sloan | Artory.AI*
+*Built by Nyari Nain | MIT Sloan SFMBA '26 | Artory.AI*
 *Inspired by maritime labor law (MLC 2006, STCW Convention)*
+*Course: 15.S12 — Agentic Web*
