@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const whiteRoom = require("./engine");
+const https = require("https");
 
 const app = express();
 app.use(express.json());
@@ -101,6 +102,84 @@ app.post("/api/white-room", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+app.post("/v1/messages", async (req, res) => {
+  const agentId = req.headers["x-whiteroom-agent"] || "unknown";
+  const fleetId = req.headers["x-whiteroom-fleet"] || "default";
+  const apiKey = req.headers["x-api-key"];
+
+  if (!apiKey) {
+    return res.status(401).json({ error: "Missing x-api-key header" });
+  }
+
+  // Count input tokens (rough estimate: 4 chars per token)
+  const inputTokens = JSON.stringify(req.body).length / 4;
+
+  // Check the agent's watch status
+  const watchStatus = whiteRoom.checkWatch(fleetId, agentId);
+
+  // If agent doesn't exist, register it on the fly
+  if (watchStatus.error && watchStatus.error.includes("not found")) {
+    whiteRoom.registerAgent(fleetId, agentId, "worker");
+    whiteRoom.startWatch(fleetId, agentId);
+  } else if (watchStatus.status === "resting") {
+    return res.status(429).json({
+      error: "Agent is resting in the White Room",
+      restRemaining: watchStatus.restRemaining,
+      alarmAt: watchStatus.alarmAt,
+      message: "This agent is in mandatory rest period. Call /api/white-room with action=fire_alarm to wake it."
+    });
+  } else if (watchStatus.needsHandover) {
+    return res.status(429).json({
+      error: "Agent has exceeded watch limit",
+      message: "This agent needs a handover before continuing. Call /api/white-room with action=initiate_handover."
+    });
+  }
+
+  // Proxy the request to the real Claude API
+  const anthropicReq = https.request({
+    hostname: "api.anthropic.com",
+    port: 443,
+    path: "/v1/messages",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": req.headers["anthropic-version"] || "2023-06-01"
+    }
+  }, (anthropicRes) => {
+    let data = "";
+    anthropicRes.on("data", chunk => data += chunk);
+    anthropicRes.on("end", () => {
+      try {
+        const parsed = JSON.parse(data);
+
+        // Track this call in WhiteRoom
+        const outputTokens = parsed.usage ? parsed.usage.output_tokens : 0;
+        const totalTokens = parsed.usage ? (parsed.usage.input_tokens + parsed.usage.output_tokens) : inputTokens;
+
+        whiteRoom.completeTask(
+          fleetId,
+          agentId,
+          req.body.metadata?.task_name || "llm_call",
+          1, // 1 minute per call for tracking
+          totalTokens
+        );
+
+        res.status(anthropicRes.statusCode).json(parsed);
+      } catch (e) {
+        res.status(500).json({ error: "Failed to parse Anthropic response", details: e.message });
+      }
+    });
+  });
+
+  anthropicReq.on("error", (e) => {
+    res.status(500).json({ error: "Failed to reach Anthropic API", details: e.message });
+  });
+
+  anthropicReq.write(JSON.stringify(req.body));
+  anthropicReq.end();
+});
+
 app.listen(PORT, () => {
   console.log(`White Room running on port ${PORT}`);
 });
