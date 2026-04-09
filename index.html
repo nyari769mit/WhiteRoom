@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhiteRoom — Agent Governance Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #050810; color: #e2e8f0; font-family: 'SF Mono','JetBrains Mono','Fira Code',monospace; font-size: 12px; }
+button { font-family: inherit; cursor: pointer; }
+select { font-family: inherit; }
+
+.header { background: #0a0f1a; border-bottom: 1px solid #1e293b; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+.header-left { display: flex; align-items: center; gap: 10px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #475569; transition: all 0.3s; }
+.dot.on { background: #22c55e; box-shadow: 0 0 12px #22c55e; }
+.title { font-size: 15px; font-weight: 800; letter-spacing: 3px; }
+.subtitle { font-size: 9px; color: #475569; border-left: 1px solid #334155; padding-left: 10px; }
+.header-right { display: flex; gap: 6px; align-items: center; }
+
+.mode-toggle { display: flex; background: #1e293b; border-radius: 5px; overflow: hidden; border: 1px solid #334155; }
+.mode-btn { background: transparent; color: #64748b; border: none; padding: 4px 10px; font-size: 10px; font-weight: 600; }
+.mode-btn.active { background: #334155; color: #e2e8f0; }
+
+.btn-run { background: #166534; color: #fff; border: none; border-radius: 5px; padding: 5px 14px; font-size: 11px; font-weight: 700; }
+.btn-run.stop { background: #991b1b; }
+.btn-run:disabled { background: #475569; cursor: not-allowed; }
+.btn-reset { background: transparent; color: #64748b; border: 1px solid #334155; border-radius: 5px; padding: 5px 10px; font-size: 11px; }
+.speed-sel { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 5px; padding: 5px 8px; font-size: 11px; }
+.status-txt { font-size: 9px; color: #64748b; }
+
+.banner { background: linear-gradient(90deg,#052e16 0%,#0a0f1a 50%,#0c4a6e 100%); padding: 10px 20px; display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; }
+.banner-item { text-align: center; padding: 4px 0; }
+.banner-label { font-size: 7px; color: #64748b; letter-spacing: 1.5px; }
+.banner-value { font-size: 15px; font-weight: 700; }
+
+.fleet-bar { padding: 10px 20px; background: #0a0f1a; border-bottom: 1px solid #1e293b; display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.fleet-card { background: #050810; border-radius: 6px; padding: 8px 12px; text-align: center; border: 1px solid #1e293b; }
+.fleet-label { font-size: 7px; color: #64748b; letter-spacing: 1.5px; }
+.fleet-value { font-size: 18px; font-weight: 700; }
+
+.main { display: grid; grid-template-columns: 1fr 280px; min-height: calc(100vh - 180px); }
+.agents-col { padding: 12px 16px; overflow-y: auto; }
+.log-col { border-left: 1px solid #1e293b; background: #050810; padding: 10px; overflow-y: auto; }
+
+.pair-card { margin-bottom: 12px; background: #0a0f1a; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
+.pair-header { padding: 6px 12px; background: #0f172a; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; }
+.pair-header span:last-child { font-size: 8px; color: #475569; font-weight: 400; }
+.pair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #1e293b; }
+
+.agent-card { background: #0a0f1a; padding: 10px 12px; cursor: pointer; border-left: 3px solid #475569; }
+.agent-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.agent-name { font-size: 11px; font-weight: 700; color: #e2e8f0; }
+.agent-meta { font-size: 8px; color: #475569; }
+.agent-badge { font-size: 7px; font-weight: 700; padding: 2px 6px; border-radius: 6px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; height: fit-content; }
+
+.progress-wrap { margin-bottom: 5px; }
+.progress-labels { display: flex; justify-content: space-between; font-size: 7px; color: #475569; margin-bottom: 2px; }
+.progress-bar { height: 3px; background: #1e293b; border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; }
+.stat-box { background: #050810; border-radius: 3px; padding: 2px 4px; text-align: center; }
+.stat-label { font-size: 6px; color: #475569; }
+.stat-value { font-size: 10px; font-weight: 700; color: #e2e8f0; }
+
+.sparkline { margin-top: 6px; border-top: 1px solid #1e293b; padding-top: 6px; display: none; }
+.sparkline.open { display: block; }
+.sparkline-title { font-size: 7px; color: #64748b; letter-spacing: 1px; margin-bottom: 3px; }
+.sparkline-bars { display: flex; align-items: flex-end; gap: 1px; height: 32px; }
+.sparkline-note { font-size: 7px; color: #334155; margin-top: 2px; }
+
+.compare { background: #0a0f1a; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 14px; }
+.compare-title { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin-bottom: 8px; }
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.compare-no-rest { background: #1c0f0f; border: 1px solid #7f1d1d; border-radius: 6px; padding: 8px 10px; }
+.compare-rest { background: #052e16; border: 1px solid #166534; border-radius: 6px; padding: 8px 10px; }
+
+.log-title { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin-bottom: 8px; }
+.log-empty { font-size: 10px; color: #334155; text-align: center; margin-top: 40px; }
+.log-entry { margin-bottom: 3px; padding: 4px 6px; background: #0a0f1a; border-radius: 3px; border-left: 2px solid #334155; }
+.log-entry span { font-size: 9px; color: #cbd5e1; line-height: 1.3; }
+
+.footer { border-top: 1px solid #1e293b; padding: 5px 20px; display: flex; justify-content: space-between; font-size: 7px; color: #334155; background: #050810; }
+
+.copyright { border-top: 1px solid #1e293b; padding: 8px 20px; text-align: center; font-size: 8px; color: #475569; background: #050810; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="dot" id="dot"></div>
+    <span class="title">WHITE ROOM</span>
+    <span class="subtitle">6h ON / 5min HANDOVER / 6h REST</span>
+  </div>
+  <div class="header-right">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-sim" onclick="switchMode('sim')">SIM</button>
+      <button class="mode-btn" id="btn-live" onclick="switchMode('live')">LIVE</button>
+    </div>
+    <span class="status-txt" id="status-txt">Ready</span>
+    <div id="sim-controls">
+      <button class="btn-run" id="btn-run" onclick="toggleSim()">RUN</button>
+    </div>
+    <div id="live-controls" style="display:none;">
+      <button class="btn-run" id="btn-live-run" onclick="runLiveDemo()">RUN LIVE</button>
+    </div>
+    <select class="speed-sel" id="speed-sel" onchange="spd=Number(this.value)">
+      <option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
+    </select>
+    <button class="btn-reset" onclick="resetAll()">Reset</button>
+  </div>
+</div>
+
+<!-- Savings Banner -->
+<div class="banner" id="banner"></div>
+
+<!-- Fleet Bar (live mode only) -->
+<div class="fleet-bar" id="fleet-bar" style="display:none;"></div>
+
+<!-- Main -->
+<div class="main">
+  <div class="agents-col" id="agents-col"></div>
+  <div class="log-col">
+    <div class="log-title">AUDIT LOG</div>
+    <div id="log-container"><div class="log-empty">Press RUN to start</div></div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <span id="footer-left">White Room v0.3 | Simulation Mode</span>
+  <span>Maritime-inspired agent labor governance | MIT Sloan 15.S12</span>
+</div>
+<div class="copyright">© 2026 Nyari Nain · MIT Sloan · Artory.AI — All rights reserved</div>
+
+<script>
+const API_BASE = window.location.origin + "/api/white-room";
+const WATCH_TICKS = 72, REST_TICKS = 72, COST_PER_1K = 0.003, ENERGY_PER_1M = 0.4;
+const PAIRS = [
+  { a: { id: "alpha", role: "Researcher", color: "#3b82f6" }, b: { id: "bravo", role: "Researcher (Relief)", color: "#6366f1" } },
+  { a: { id: "charlie", role: "Writer", color: "#8b5cf6" }, b: { id: "delta", role: "Writer (Relief)", color: "#a78bfa" } },
+];
+const TASKS = [
+  { name: "Deep research", tokens: 2800, priority: "HIGH", minutes: 45 },
+  { name: "Source analysis", tokens: 1900, priority: "NORMAL", minutes: 30 },
+  { name: "Draft section", tokens: 3200, priority: "HIGH", minutes: 50 },
+  { name: "Review content", tokens: 1200, priority: "NORMAL", minutes: 20 },
+  { name: "Safety check", tokens: 800, priority: "CRITICAL", minutes: 15 },
+  { name: "Edit prose", tokens: 2100, priority: "NORMAL", minutes: 35 },
+  { name: "Fact check", tokens: 1500, priority: "HIGH", minutes: 25 },
+  { name: "Synthesize", tokens: 2600, priority: "NORMAL", minutes: 40 },
+];
+
+const STATUS_COLORS = {
+  working: { bg: "#052e16", bd: "#22c55e", tx: "#4ade80" },
+  overtime: { bg: "#451a03", bd: "#f59e0b", tx: "#fbbf24" },
+  handing_over: { bg: "#1e1b4b", bd: "#818cf8", tx: "#a5b4fc" },
+  resting: { bg: "#0c4a6e", bd: "#0ea5e9", tx: "#38bdf8" },
+  alarm: { bg: "#4c0519", bd: "#f43f5e", tx: "#fb7185" },
+  idle: { bg: "#1e293b", bd: "#475569", tx: "#94a3b8" },
+};
+const LOG_COLORS = { handover: "#818cf8", overtime: "#f59e0b", rest: "#0ea5e9", alarm: "#f43f5e", error: "#ef4444", info: "#334155" };
+
+let mode = "sim", running = false, simInterval = null, spd = 1, tk = 0, selected = null;
+let fleetId = "demo-" + Math.random().toString(36).slice(2, 8);
+let agents = [], logEntries = [], liveFleet = null;
+
+function mkAgent(cfg, active) {
+  return { ...cfg, status: active ? "working" : "resting", watchTick: 0, restTick: active ? 0 : REST_TICKS, watchNum: active ? 1 : 0, tasks: 0, ctx: 0, ctxNoRest: 0, sent: 0, sentNoRest: 0, otCredits: 0, handovers: 0, alarms: 0, ctxHist: [], minutesWorked: 0, health: 100, baseline: 100, healthHist: [100] };
+}
+
+function initAgents() {
+  agents = [];
+  PAIRS.forEach(p => { agents.push(mkAgent(p.a, true)); agents.push(mkAgent(p.b, false)); });
+}
+
+function partner(id) {
+  for (const p of PAIRS) { if (p.a.id === id) return p.b.id; if (p.b.id === id) return p.a.id; }
+  return null;
+}
+
+function addLog(msg, type) {
+  logEntries.unshift({ msg, type, time: new Date().toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" }) });
+  if (logEntries.length > 80) logEntries = logEntries.slice(0, 80);
+  renderLog();
+}
+
+// ─── Rendering ──────────────────────────────────────────────
+function renderBanner() {
+  const tSent = agents.reduce((s, a) => s + a.sent, 0);
+  const tNoRest = agents.reduce((s, a) => s + a.sentNoRest, 0);
+  const savePct = tNoRest > 0 ? ((1 - tSent / tNoRest) * 100) : 0;
+  const cost = (tSent / 1000) * COST_PER_1K;
+  const costNR = (tNoRest / 1000) * COST_PER_1K;
+  const energy = (tSent / 1000000) * ENERGY_PER_1M;
+  const energyNR = (tNoRest / 1000000) * ENERGY_PER_1M;
+  const avgHealth = agents.length > 0 ? agents.reduce((s, a) => s + a.health, 0) / agents.length : 100;
+  const avgBaseline = agents.length > 0 ? agents.reduce((s, a) => s + a.baseline, 0) / agents.length : 100;
+  const items = [
+    { l: "TOKENS SENT", v: (tSent / 1000).toFixed(0) + "K", c: "#f8fafc" },
+    { l: "WITHOUT REST", v: (tNoRest / 1000).toFixed(0) + "K", c: "#ef4444" },
+    { l: "REDUCTION", v: savePct.toFixed(0) + "%", c: "#4ade80" },
+    { l: "COST SAVED", v: "$" + (costNR - cost).toFixed(3), c: "#4ade80" },
+    { l: "ENERGY SAVED", v: (energyNR - energy).toFixed(4) + " kWh", c: "#4ade80" },
+    { l: "AVG HEALTH", v: avgHealth.toFixed(0) + "%", c: avgHealth >= 80 ? "#4ade80" : avgHealth >= 50 ? "#fbbf24" : "#ef4444" },
+    { l: "FLEET WISDOM", v: avgBaseline.toFixed(0) + "%", c: avgBaseline > 100 ? "#86efac" : "#f8fafc" },
+  ];
+  document.getElementById("banner").innerHTML = items.map(s =>
+    '<div class="banner-item"><div class="banner-label">' + s.l + '</div><div class="banner-value" style="color:' + s.c + '">' + s.v + '</div></div>'
+  ).join("");
+}
+
+function renderAgents() {
+  const tSent = agents.reduce((s, a) => s + a.sent, 0);
+  const tNoRest = agents.reduce((s, a) => s + a.sentNoRest, 0);
+  const cost = (tSent / 1000) * COST_PER_1K;
+  const costNR = (tNoRest / 1000) * COST_PER_1K;
+  const energy = (tSent / 1000000) * ENERGY_PER_1M;
+  const energyNR = (tNoRest / 1000000) * ENERGY_PER_1M;
+
+  let html = "";
+  PAIRS.forEach((pair, pi) => {
+    const a = agents.find(x => x.id === pair.a.id);
+    const b = agents.find(x => x.id === pair.b.id);
+    html += '<div class="pair-card"><div class="pair-header"><span>WATCH PAIR ' + (pi + 1) + '</span><span>Handovers: ' + (a.handovers + b.handovers) + '</span></div><div class="pair-grid">';
+    [a, b].forEach(ag => {
+      const sc = STATUS_COLORS[ag.status] || STATUS_COLORS.idle;
+      const isRest = ag.status === "resting" || ag.status === "alarm";
+      const prog = isRest ? ag.restTick / REST_TICKS : ag.watchTick / WATCH_TICKS;
+      const pct = (Math.min(prog, 1) * 100).toFixed(0);
+      const barColor = prog > 0.9 && !isRest ? "#f59e0b" : sc.bd;
+      const isOpen = selected === ag.id;
+
+      html += '<div class="agent-card" style="border-left-color:' + sc.bd + '" onclick="toggleAgent(\'' + ag.id + '\')">';
+      html += '<div class="agent-top"><div><div class="agent-name">' + ag.id.toUpperCase() + '</div><div class="agent-meta">' + ag.role + ' | Watch #' + ag.watchNum + ' | ' + ag.tasks + ' tasks</div></div>';
+      html += '<div class="agent-badge" style="background:' + sc.bg + ';color:' + sc.tx + ';border:1px solid ' + sc.bd + '">' + (ag.status === "handing_over" ? "HANDOVER" : ag.status.toUpperCase()) + '</div></div>';
+      html += '<div class="progress-wrap"><div class="progress-labels"><span>' + (isRest ? "Rest" : "Watch") + '</span><span>' + pct + '%</span></div>';
+      html += '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div></div>';
+      // Health bar
+      const healthPct = Math.min(ag.health, 130);
+      const healthColor = ag.health >= 100 ? "#22c55e" : ag.health >= 70 ? "#4ade80" : ag.health >= 40 ? "#f59e0b" : "#ef4444";
+      const baselineBonus = ag.baseline > 100 ? ' <span style="color:#86efac">+' + (ag.baseline - 100).toFixed(0) + '</span>' : '';
+      html += '<div class="progress-wrap"><div class="progress-labels"><span>Health' + baselineBonus + '</span><span>' + ag.health.toFixed(0) + '%</span></div>';
+      html += '<div class="progress-bar"><div class="progress-fill" style="width:' + (healthPct / 130 * 100) + '%;background:' + healthColor + '"></div></div></div>';
+      html += '<div class="stats-grid">';
+      html += '<div class="stat-box"><div class="stat-label">CONTEXT</div><div class="stat-value" style="color:' + (ag.ctx > 30000 ? "#f59e0b" : "#e2e8f0") + '">' + (ag.ctx / 1000).toFixed(1) + 'K</div></div>';
+      html += '<div class="stat-box"><div class="stat-label">BASELINE</div><div class="stat-value" style="color:' + (ag.baseline > 100 ? "#86efac" : "#e2e8f0") + '">' + ag.baseline.toFixed(0) + '%</div></div>';
+      html += '<div class="stat-box"><div class="stat-label">SENT</div><div class="stat-value">' + (ag.sent / 1000).toFixed(0) + 'K</div></div>';
+      html += '</div>';
+
+      if (isOpen && ag.ctxHist.length > 0) {
+        const slice = ag.ctxHist.slice(-30);
+        const mx = Math.max(...slice.map(x => x.tokens), 1);
+        html += '<div class="sparkline open"><div class="sparkline-title">CONTEXT SIZE OVER TIME</div><div class="sparkline-bars">';
+        slice.forEach(h => {
+          const ht = Math.max(1, (h.tokens / mx) * 30);
+          const col = h.tokens === 0 ? "#22c55e" : h.tokens > 30000 ? "#f59e0b" : "#3b82f6";
+          html += '<div style="flex:1;height:' + ht + 'px;background:' + col + ';border-radius:1px 1px 0 0"></div>';
+        });
+        html += '</div><div class="sparkline-note">Green bars = context cleared at handover</div>';
+        // Health history sparkline
+        if (ag.healthHist.length > 1) {
+          const hslice = ag.healthHist.slice(-30);
+          html += '<div class="sparkline-title" style="margin-top:8px">HEALTH OVER TIME</div><div class="sparkline-bars">';
+          hslice.forEach(h => {
+            const hh = Math.max(1, (h / 130) * 30);
+            const hc = h >= 100 ? "#22c55e" : h >= 70 ? "#4ade80" : h >= 40 ? "#f59e0b" : "#ef4444";
+            html += '<div style="flex:1;height:' + hh + 'px;background:' + hc + ';border-radius:1px 1px 0 0"></div>';
+          });
+          html += '</div><div class="sparkline-note">Recovery spikes after each rest cycle</div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+
+  // Comparison panel
+  html += '<div class="compare"><div class="compare-title">CONTINUOUS vs WHITE ROOM</div><div class="compare-grid">';
+  html += '<div class="compare-no-rest"><div style="font-size:7px;color:#ef4444;margin-bottom:2px">WITHOUT REST</div>';
+  html += '<div style="font-size:16px;font-weight:700;color:#fca5a5">' + (tNoRest / 1000).toFixed(0) + 'K tokens</div>';
+  html += '<div style="font-size:8px;color:#ef4444">$' + costNR.toFixed(3) + ' | ' + energyNR.toFixed(4) + ' kWh</div>';
+  html += '<div style="font-size:7px;color:#7f1d1d;margin-top:2px">Context grows forever. Every call pays full cost.</div></div>';
+  html += '<div class="compare-rest"><div style="font-size:7px;color:#4ade80;margin-bottom:2px">WITH WHITE ROOM</div>';
+  html += '<div style="font-size:16px;font-weight:700;color:#86efac">' + (tSent / 1000).toFixed(0) + 'K tokens</div>';
+  html += '<div style="font-size:8px;color:#4ade80">$' + cost.toFixed(3) + ' | ' + energy.toFixed(4) + ' kWh</div>';
+  html += '<div style="font-size:7px;color:#166534;margin-top:2px">Context resets at handover. Fresh agent, lower cost.</div></div>';
+  html += '</div></div>';
+
+  document.getElementById("agents-col").innerHTML = html;
+}
+
+function renderLog() {
+  const el = document.getElementById("log-container");
+  if (logEntries.length === 0) { el.innerHTML = '<div class="log-empty">Press ' + (mode === "sim" ? "RUN" : "RUN LIVE") + ' to start</div>'; return; }
+  el.innerHTML = logEntries.map(e =>
+    '<div class="log-entry" style="border-left-color:' + (LOG_COLORS[e.type] || LOG_COLORS.info) + '"><span>' + e.time + ' ' + e.msg + '</span></div>'
+  ).join("");
+}
+
+function renderFleetBar(data) {
+  if (!data) { document.getElementById("fleet-bar").style.display = "none"; return; }
+  document.getElementById("fleet-bar").style.display = "grid";
+  const items = [
+    { l: "AGENTS", v: data.agentCount, c: "#38bdf8" },
+    { l: "TASKS", v: data.totals.tasks, c: "#f8fafc" },
+    { l: "HANDOVERS", v: data.totals.handovers, c: "#818cf8" },
+    { l: "COMPLIANCE", v: data.compliance.laborScore, c: "#4ade80" },
+  ];
+  document.getElementById("fleet-bar").innerHTML = items.map(s =>
+    '<div class="fleet-card"><div class="fleet-label">' + s.l + '</div><div class="fleet-value" style="color:' + s.c + '">' + s.v + '</div></div>'
+  ).join("");
+}
+
+function renderAll() { renderBanner(); renderAgents(); }
+function toggleAgent(id) { selected = selected === id ? null : id; renderAgents(); }
+
+// ─── Mode switching ─────────────────────────────────────────
+function switchMode(m) {
+  resetAll();
+  mode = m;
+  document.getElementById("btn-sim").className = "mode-btn" + (m === "sim" ? " active" : "");
+  document.getElementById("btn-live").className = "mode-btn" + (m === "live" ? " active" : "");
+  document.getElementById("sim-controls").style.display = m === "sim" ? "inline" : "none";
+  document.getElementById("live-controls").style.display = m === "live" ? "inline" : "none";
+  document.getElementById("speed-sel").style.display = m === "sim" ? "inline" : "none";
+  document.getElementById("footer-left").textContent = "White Room v0.3 | " + (m === "live" ? "Live API: " + API_BASE : "Simulation Mode");
+}
+
+function resetAll() {
+  running = false;
+  if (simInterval) clearInterval(simInterval);
+  simInterval = null;
+  tk = 0;
+  selected = null;
+  logEntries = [];
+  liveFleet = null;
+  fleetId = "demo-" + Math.random().toString(36).slice(2, 8);
+  initAgents();
+  document.getElementById("dot").className = "dot";
+  document.getElementById("btn-run").textContent = "RUN";
+  document.getElementById("btn-run").className = "btn-run";
+  document.getElementById("btn-live-run").disabled = false;
+  document.getElementById("btn-live-run").textContent = "RUN LIVE";
+  document.getElementById("status-txt").textContent = "Ready";
+  document.getElementById("status-txt").style.color = "#64748b";
+  renderFleetBar(null);
+  renderAll();
+  renderLog();
+}
+
+// ─── Simulation ─────────────────────────────────────────────
+function toggleSim() {
+  if (running) {
+    running = false;
+    clearInterval(simInterval);
+    document.getElementById("dot").className = "dot";
+    document.getElementById("btn-run").textContent = "RUN";
+    document.getElementById("btn-run").className = "btn-run";
+  } else {
+    running = true;
+    document.getElementById("dot").className = "dot on";
+    document.getElementById("btn-run").textContent = "STOP";
+    document.getElementById("btn-run").className = "btn-run stop";
+    simInterval = setInterval(simTick, 1200 / spd);
+  }
+}
+
+function simTick() {
+  tk++;
+  document.getElementById("status-txt").textContent = "Sim: " + ((tk * 30) / 60).toFixed(1) + "h";
+  agents.forEach(a => {
+    if (a.status === "resting") {
+      a.restTick++;
+      // Health recovery — recovers toward baseline + bonus
+      const recoveryProgress = a.restTick / REST_TICKS;
+      a.health = Math.min(a.baseline, a.health + (a.baseline - a.health) * 0.1);
+      a.healthHist.push(a.health);
+      if (a.healthHist.length > 60) a.healthHist.shift();
+      if (a.restTick >= REST_TICKS) {
+        // Full rest completed — baseline grows (learning/consolidation)
+        a.baseline = Math.min(130, a.baseline + 2);
+        a.health = a.baseline;
+        a.status = "alarm";
+        a.alarms++;
+        addLog("ALARM: " + a.role + " ready for handover | Health restored to " + a.baseline.toFixed(0) + "% (wiser)", "alarm");
+      }
+      return;
+    }
+    if (a.status === "alarm" || a.status === "handing_over") return;
+    if (a.status === "working" || a.status === "overtime") {
+      const task = TASKS[Math.floor(Math.random() * TASKS.length)];
+      a.ctx += task.tokens;
+      a.ctxNoRest += task.tokens;
+      a.sent += a.ctx;
+      a.sentNoRest += a.ctxNoRest;
+      a.tasks++;
+      a.minutesWorked += task.minutes;
+      a.watchTick++;
+      a.ctxHist.push({ tokens: a.ctx });
+      // Health decay — based on task complexity (tokens)
+      const decay = (task.tokens / 1000) * 0.8; // ~1-3% per task
+      const overtimeFatigue = a.status === "overtime" ? 2 : 0;
+      a.health = Math.max(20, a.health - decay - overtimeFatigue);
+      a.healthHist.push(a.health);
+      if (a.healthHist.length > 60) a.healthHist.shift();
+      if (a.watchTick > WATCH_TICKS && a.status !== "overtime") { a.status = "overtime"; addLog("OVERTIME: " + a.role + " exceeded watch limit — health declining", "overtime"); }
+      if (a.watchTick > WATCH_TICKS) { const pm = task.priority === "CRITICAL" ? 2 : task.priority === "HIGH" ? 1.5 : 1; a.otCredits += 30 * 1.5 * pm; }
+      if (a.watchTick >= WATCH_TICKS) {
+        const pid = partner(a.id);
+        const pr = agents.find(x => x.id === pid);
+        if (pr && (pr.status === "alarm" || (pr.status === "resting" && pr.restTick >= REST_TICKS - 2))) {
+          const before = a.ctx;
+          a.status = "handing_over"; a.handovers++;
+          pr.status = "working"; pr.watchTick = 0; pr.watchNum++; pr.ctx = Math.min(2000, Math.floor(before * 0.05)); pr.ctxNoRest = a.ctxNoRest; pr.handovers++;
+          pr.ctxHist.push({ tokens: pr.ctx });
+          addLog("HANDOVER: " + a.role + " → " + pr.role + " | " + (before / 1000).toFixed(1) + "K → " + (pr.ctx / 1000).toFixed(1) + "K context (" + ((1 - pr.ctx / before) * 100).toFixed(0) + "% cut)", "handover");
+          setTimeout(() => { a.status = "resting"; a.restTick = 0; a.ctx = 0; a.ctxHist.push({ tokens: 0 }); addLog("REST: " + a.role + " → White Room. Context cleared. Health recovering...", "rest"); renderAll(); }, 100);
+        }
+      }
+    }
+  });
+  renderAll();
+}
+
+// ─── Live API ───────────────────────────────────────────────
+async function apiCall(action, params) {
+  try {
+    const res = await fetch(API_BASE, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, fleet_id: fleetId, ...params }) });
+    return await res.json();
+  } catch (e) { addLog("API error: " + e.message, "error"); return { error: e.message }; }
+}
+
+async function runLiveDemo() {
+  document.getElementById("btn-live-run").disabled = true;
+  document.getElementById("btn-live-run").textContent = "RUNNING...";
+  document.getElementById("dot").className = "dot on";
+  document.getElementById("status-txt").textContent = "Calling API...";
+  document.getElementById("status-txt").style.color = "#4ade80";
+  fleetId = "demo-" + Math.random().toString(36).slice(2, 8);
+  agents = [];
+  PAIRS.forEach(p => { agents.push(mkAgent(p.a, false)); agents.push(mkAgent(p.b, false)); });
+  renderAll();
+
+  // Register
+  for (const pair of PAIRS) {
+    for (const cfg of [pair.a, pair.b]) {
+      addLog("Registering " + cfg.id + " (" + cfg.role + ")...", "info");
+      const r = await apiCall("register_agent", { agent_id: cfg.id, agent_role: cfg.role });
+      if (r.success) { agents.find(a => a.id === cfg.id).status = "idle"; addLog(cfg.id + " registered", "info"); }
+      else addLog(r.error || "Failed", "error");
+    }
+  }
+  renderAll();
+
+  // Pair
+  for (const pair of PAIRS) {
+    addLog("Pairing " + pair.a.id + " + " + pair.b.id + "...", "info");
+    const r = await apiCall("pair_agents", { agent_id: pair.a.id, paired_with: pair.b.id });
+    if (r.success) addLog("Paired: " + pair.a.id + " ↔ " + pair.b.id, "handover");
+    else addLog(r.error || "Failed", "error");
+  }
+
+  // Start watches
+  for (const pair of PAIRS) {
+    addLog("Starting " + pair.a.id + "'s watch...", "info");
+    const r = await apiCall("start_watch", { agent_id: pair.a.id });
+    if (r.success) {
+      const ag = agents.find(a => a.id === pair.a.id);
+      ag.status = "working"; ag.watchNum = r.watchNumber;
+      addLog("Watch " + r.watchNumber + " started — " + r.watchLimit + "min on clock", "info");
+    }
+  }
+  renderAll();
+  await new Promise(r => setTimeout(r, 400));
+
+  // Tasks
+  for (const pair of PAIRS) {
+    const tasks = [...TASKS].sort(() => Math.random() - 0.5).slice(0, 4);
+    for (const task of tasks) {
+      addLog(pair.a.id + ": " + task.name + " (" + task.minutes + "min, " + (task.tokens / 1000).toFixed(1) + "K tokens)...", "info");
+      const r = await apiCall("complete_task", { agent_id: pair.a.id, task_name: task.name, minutes_spent: task.minutes, tokens_used: task.tokens });
+      if (r.success) {
+        const ag = agents.find(a => a.id === pair.a.id);
+        ag.tasks++; ag.ctx += task.tokens; ag.sent += ag.ctx; ag.sentNoRest += ag.ctx;
+        ag.minutesWorked += task.minutes;
+        ag.watchTick = Math.floor(parseFloat(r.watchProgress.percentComplete) / 100 * WATCH_TICKS);
+        ag.ctxHist.push({ tokens: ag.ctx });
+        if (r.alert === "WATCH_LIMIT_REACHED") addLog("WATCH LIMIT: " + pair.a.id + " — handover required!", "overtime");
+        else addLog("Done. " + Math.round(r.watchProgress.minutesRemaining) + "min remaining (" + Math.round(parseFloat(r.watchProgress.percentComplete)) + "%)", "info");
+        renderAll();
+      }
+    }
+  }
+  await new Promise(r => setTimeout(r, 400));
+
+  // Handovers
+  for (const pair of PAIRS) {
+    addLog("HANDOVER: " + pair.a.id + " → " + pair.b.id + "...", "handover");
+    const r = await apiCall("initiate_handover", { agent_id: pair.a.id, to_agent: pair.b.id, context_summary: "Completed all assigned tasks." });
+    if (r.success) {
+      const a = agents.find(x => x.id === pair.a.id);
+      const b = agents.find(x => x.id === pair.b.id);
+      a.status = "resting"; a.handovers++; a.restTick = 0; a.ctxHist.push({ tokens: 0 });
+      b.status = "working"; b.handovers++; b.watchNum++; b.ctx = 2000; b.ctxHist.push({ tokens: 2000 });
+      addLog(r.energySavings.contextCleared + " → " + r.energySavings.freshContext + " (" + r.energySavings.reduction + " reduction)", "handover");
+      addLog(pair.a.id + " → White Room. " + pair.b.id + " on watch.", "rest");
+      renderAll();
+    }
+  }
+  await new Promise(r => setTimeout(r, 400));
+
+  // Alarms
+  for (const pair of PAIRS) {
+    addLog("Firing alarm: " + pair.a.id + "...", "alarm");
+    const r = await apiCall("fire_alarm", { agent_id: pair.a.id });
+    if (r.success) {
+      const ag = agents.find(a => a.id === pair.a.id);
+      ag.status = "idle"; ag.alarms++;
+      addLog(pair.a.id + " awake — " + r.totalWatches + " watches, " + (r.totalTokens / 1000).toFixed(0) + "K tokens total", "alarm");
+    }
+  }
+  renderAll();
+
+  // Fleet report
+  addLog("Fetching fleet report...", "info");
+  const report = await apiCall("fleet_report");
+  if (!report.error) {
+    liveFleet = report;
+    renderFleetBar(report);
+    addLog("Fleet: " + report.agentCount + " agents | " + report.totals.tasks + " tasks | " + report.totals.handovers + " handovers | compliance " + report.compliance.laborScore, "info");
+  }
+
+  document.getElementById("dot").className = "dot on";
+  document.getElementById("status-txt").textContent = "Complete";
+  document.getElementById("btn-live-run").disabled = false;
+  document.getElementById("btn-live-run").textContent = "RUN LIVE";
+}
+
+// Init
+initAgents();
+renderAll();
+renderLog();
+</script>
+</body>
+</html>
