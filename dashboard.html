@@ -13,7 +13,8 @@ select { font-family: inherit; }
 .header { background: #0a0f1a; border-bottom: 1px solid #1e293b; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
 .header-left { display: flex; align-items: center; gap: 10px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #475569; transition: all 0.3s; }
-.dot.on { background: #22c55e; box-shadow: 0 0 12px #22c55e; }
+.dot.on { background: #22c55e; box-shadow: 0 0 12px #22c55e; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 12px #22c55e; } 50% { box-shadow: 0 0 20px #22c55e; } }
 .title { font-size: 15px; font-weight: 800; letter-spacing: 3px; }
 .subtitle { font-size: 9px; color: #475569; border-left: 1px solid #334155; padding-left: 10px; }
 .header-right { display: flex; gap: 6px; align-items: center; }
@@ -32,9 +33,9 @@ select { font-family: inherit; }
 .banner { background: linear-gradient(90deg,#052e16 0%,#0a0f1a 50%,#0c4a6e 100%); padding: 10px 20px; display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; }
 .banner-item { text-align: center; padding: 4px 0; }
 .banner-label { font-size: 7px; color: #64748b; letter-spacing: 1.5px; }
-.banner-value { font-size: 15px; font-weight: 700; }
+.banner-value { font-size: 15px; font-weight: 700; transition: color 0.5s; }
 
-.fleet-bar { padding: 10px 20px; background: #0a0f1a; border-bottom: 1px solid #1e293b; display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.fleet-bar { padding: 10px 20px; background: #0a0f1a; border-bottom: 1px solid #1e293b; display: none; grid-template-columns: repeat(4,1fr); gap: 8px; }
 .fleet-card { background: #050810; border-radius: 6px; padding: 8px 12px; text-align: center; border: 1px solid #1e293b; }
 .fleet-label { font-size: 7px; color: #64748b; letter-spacing: 1.5px; }
 .fleet-value { font-size: 18px; font-weight: 700; }
@@ -45,32 +46,25 @@ select { font-family: inherit; }
 
 .pair-card { margin-bottom: 12px; background: #0a0f1a; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
 .pair-header { padding: 6px 12px; background: #0f172a; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; }
-.pair-header span:last-child { font-size: 8px; color: #475569; font-weight: 400; }
 .pair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #1e293b; }
 
-.agent-card { background: #0a0f1a; padding: 10px 12px; cursor: pointer; border-left: 3px solid #475569; }
+.agent-card { background: #0a0f1a; padding: 10px 12px; border-left: 3px solid #475569; transition: border-color 0.3s; }
 .agent-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
 .agent-name { font-size: 11px; font-weight: 700; color: #e2e8f0; }
 .agent-meta { font-size: 8px; color: #475569; }
-.agent-badge { font-size: 7px; font-weight: 700; padding: 2px 6px; border-radius: 6px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; height: fit-content; }
+.agent-badge { font-size: 7px; font-weight: 700; padding: 2px 6px; border-radius: 6px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
 
 .progress-wrap { margin-bottom: 5px; }
 .progress-labels { display: flex; justify-content: space-between; font-size: 7px; color: #475569; margin-bottom: 2px; }
 .progress-bar { height: 3px; background: #1e293b; border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.progress-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease, background 0.5s; }
 
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; }
-.stat-box { background: #050810; border-radius: 3px; padding: 2px 4px; text-align: center; }
+.stat-box { background: #050810; border-radius: 3px; padding: 3px 4px; text-align: center; }
 .stat-label { font-size: 6px; color: #475569; }
-.stat-value { font-size: 10px; font-weight: 700; color: #e2e8f0; }
+.stat-value { font-size: 11px; font-weight: 700; color: #e2e8f0; transition: color 0.5s; }
 
-.sparkline { margin-top: 6px; border-top: 1px solid #1e293b; padding-top: 6px; display: none; }
-.sparkline.open { display: block; }
-.sparkline-title { font-size: 7px; color: #64748b; letter-spacing: 1px; margin-bottom: 3px; }
-.sparkline-bars { display: flex; align-items: flex-end; gap: 1px; height: 32px; }
-.sparkline-note { font-size: 7px; color: #334155; margin-top: 2px; }
-
-.compare { background: #0a0f1a; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 14px; }
+.compare { background: #0a0f1a; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 14px; margin-top: 8px; }
 .compare-title { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin-bottom: 8px; }
 .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .compare-no-rest { background: #1c0f0f; border: 1px solid #7f1d1d; border-radius: 6px; padding: 8px 10px; }
@@ -82,13 +76,14 @@ select { font-family: inherit; }
 .log-entry span { font-size: 9px; color: #cbd5e1; line-height: 1.3; }
 
 .footer { border-top: 1px solid #1e293b; padding: 5px 20px; display: flex; justify-content: space-between; font-size: 7px; color: #334155; background: #050810; }
-
 .copyright { border-top: 1px solid #1e293b; padding: 8px 20px; text-align: center; font-size: 8px; color: #475569; background: #050810; }
+
+.task-flash { animation: taskFlash 0.4s ease; }
+@keyframes taskFlash { 0% { background: #0f2a1a; } 100% { background: #0a0f1a; } }
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
   <div class="header-left">
     <div class="dot" id="dot"></div>
@@ -105,7 +100,7 @@ select { font-family: inherit; }
       <button class="btn-run" id="btn-run" onclick="toggleSim()">RUN</button>
     </div>
     <div id="live-controls" style="display:none;">
-      <button class="btn-run" id="btn-live-run" onclick="runLiveDemo()">RUN LIVE</button>
+      <button class="btn-run" id="btn-live-run" onclick="toggleLive()">RUN LIVE</button>
     </div>
     <select class="speed-sel" id="speed-sel" onchange="spd=Number(this.value)">
       <option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
@@ -114,13 +109,9 @@ select { font-family: inherit; }
   </div>
 </div>
 
-<!-- Savings Banner -->
 <div class="banner" id="banner"></div>
+<div class="fleet-bar" id="fleet-bar"></div>
 
-<!-- Fleet Bar (live mode only) -->
-<div class="fleet-bar" id="fleet-bar" style="display:none;"></div>
-
-<!-- Main -->
 <div class="main">
   <div class="agents-col" id="agents-col"></div>
   <div class="log-col">
@@ -129,231 +120,254 @@ select { font-family: inherit; }
   </div>
 </div>
 
-<!-- Footer -->
 <div class="footer">
-  <span id="footer-left">White Room v0.3 | Simulation Mode</span>
+  <span id="footer-left">White Room v0.4 | Simulation Mode</span>
   <span>Maritime-inspired agent labor governance | MIT Sloan 15.S12</span>
 </div>
 <div class="copyright">© 2026 Nyari Nain · MIT Sloan · Artory.AI — All rights reserved</div>
 
 <script>
-const API_BASE = window.location.origin + "/api/white-room";
-const WATCH_TICKS = 72, REST_TICKS = 72, COST_PER_1K = 0.003, ENERGY_PER_1M = 0.4;
+// ─── Config ─────────────────────────────────────────────────
+const WHITEROOM_URL = "https://whiteroom-m4j4.onrender.com";
+const AGENTS_URL = "https://event-planning-relief.onrender.com";
+const FLEET_ID = "event-planning-fleet";
+const WATCH_TICKS = 72, REST_TICKS = 72;
+const COST_PER_1K = 0.003, ENERGY_PER_1M = 0.4;
+
 const PAIRS = [
-  { a: { id: "alpha", role: "Researcher", color: "#3b82f6" }, b: { id: "bravo", role: "Researcher (Relief)", color: "#6366f1" } },
-  { a: { id: "charlie", role: "Writer", color: "#8b5cf6" }, b: { id: "delta", role: "Writer (Relief)", color: "#a78bfa" } },
+  { a: { id: "alpha",   role: "Lead Planner",    color: "#3b82f6" },
+    b: { id: "bravo",   role: "Planner (Relief)", color: "#6366f1" } },
+  { a: { id: "charlie", role: "Coordinator",      color: "#8b5cf6" },
+    b: { id: "delta",   role: "Coord. (Relief)",  color: "#a78bfa" } },
 ];
+
 const TASKS = [
-  { name: "Deep research", tokens: 2800, priority: "HIGH", minutes: 45 },
-  { name: "Source analysis", tokens: 1900, priority: "NORMAL", minutes: 30 },
-  { name: "Draft section", tokens: 3200, priority: "HIGH", minutes: 50 },
-  { name: "Review content", tokens: 1200, priority: "NORMAL", minutes: 20 },
-  { name: "Safety check", tokens: 800, priority: "CRITICAL", minutes: 15 },
-  { name: "Edit prose", tokens: 2100, priority: "NORMAL", minutes: 35 },
-  { name: "Fact check", tokens: 1500, priority: "HIGH", minutes: 25 },
-  { name: "Synthesize", tokens: 2600, priority: "NORMAL", minutes: 40 },
+  { name: "Venue coordination",   tokens: 2800, priority: "HIGH",     minutes: 45 },
+  { name: "Vendor negotiation",   tokens: 1900, priority: "NORMAL",   minutes: 30 },
+  { name: "Guest list review",    tokens: 3200, priority: "HIGH",     minutes: 50 },
+  { name: "Budget reconciliation",tokens: 1200, priority: "NORMAL",   minutes: 20 },
+  { name: "Catering brief",       tokens: 800,  priority: "CRITICAL", minutes: 15 },
+  { name: "Timeline draft",       tokens: 2100, priority: "NORMAL",   minutes: 35 },
+  { name: "RSVP follow-up",       tokens: 1500, priority: "HIGH",     minutes: 25 },
+  { name: "Decor planning",       tokens: 2600, priority: "NORMAL",   minutes: 40 },
 ];
 
 const STATUS_COLORS = {
-  working: { bg: "#052e16", bd: "#22c55e", tx: "#4ade80" },
-  overtime: { bg: "#451a03", bd: "#f59e0b", tx: "#fbbf24" },
+  working:      { bg: "#052e16", bd: "#22c55e", tx: "#4ade80" },
+  overtime:     { bg: "#451a03", bd: "#f59e0b", tx: "#fbbf24" },
   handing_over: { bg: "#1e1b4b", bd: "#818cf8", tx: "#a5b4fc" },
-  resting: { bg: "#0c4a6e", bd: "#0ea5e9", tx: "#38bdf8" },
-  alarm: { bg: "#4c0519", bd: "#f43f5e", tx: "#fb7185" },
-  idle: { bg: "#1e293b", bd: "#475569", tx: "#94a3b8" },
+  resting:      { bg: "#0c4a6e", bd: "#0ea5e9", tx: "#38bdf8" },
+  alarm:        { bg: "#4c0519", bd: "#f43f5e", tx: "#fb7185" },
+  idle:         { bg: "#1e293b", bd: "#475569", tx: "#94a3b8" },
 };
-const LOG_COLORS = { handover: "#818cf8", overtime: "#f59e0b", rest: "#0ea5e9", alarm: "#f43f5e", error: "#ef4444", info: "#334155" };
+const LOG_COLORS = {
+  handover: "#818cf8", overtime: "#f59e0b", rest: "#0ea5e9",
+  alarm: "#f43f5e", error: "#ef4444", info: "#334155", task: "#22c55e"
+};
 
-let mode = "sim", running = false, simInterval = null, spd = 1, tk = 0, selected = null;
-let fleetId = "demo-" + Math.random().toString(36).slice(2, 8);
-let agents = [], logEntries = [], liveFleet = null;
+// ─── State ──────────────────────────────────────────────────
+let mode = "sim", running = false, simInterval = null, liveInterval = null;
+let spd = 1, tk = 0, selected = null;
+let agents = [], logEntries = [];
 
 function mkAgent(cfg, active) {
-  return { ...cfg, status: active ? "working" : "resting", watchTick: 0, restTick: active ? 0 : REST_TICKS, watchNum: active ? 1 : 0, tasks: 0, ctx: 0, ctxNoRest: 0, sent: 0, sentNoRest: 0, otCredits: 0, handovers: 0, alarms: 0, ctxHist: [], minutesWorked: 0, health: 100, baseline: 100, healthHist: [100] };
+  return {
+    ...cfg,
+    status: active ? "working" : "resting",
+    watchTick: 0, restTick: active ? 0 : REST_TICKS,
+    watchNum: active ? 1 : 0,
+    tasks: 0, handovers: 0, alarms: 0,
+    ctx: 0,         // tokens WITH whitroom (context resets at handover)
+    ctxNoRest: 0,   // tokens WITHOUT whiteroom (context grows forever)
+    sent: 0,        // cumulative tokens sent WITH whiteroom
+    sentNoRest: 0,  // cumulative tokens sent WITHOUT whiteroom
+    health: active ? 100 : 100,
+    baseline: 100,
+    minutesWorked: 0,
+    ctxHist: [],
+    healthHist: [100],
+  };
 }
 
 function initAgents() {
   agents = [];
-  PAIRS.forEach(p => { agents.push(mkAgent(p.a, true)); agents.push(mkAgent(p.b, false)); });
+  PAIRS.forEach(p => {
+    agents.push(mkAgent(p.a, true));
+    agents.push(mkAgent(p.b, false));
+  });
 }
 
 function partner(id) {
-  for (const p of PAIRS) { if (p.a.id === id) return p.b.id; if (p.b.id === id) return p.a.id; }
+  for (const p of PAIRS) {
+    if (p.a.id === id) return p.b.id;
+    if (p.b.id === id) return p.a.id;
+  }
   return null;
 }
 
 function addLog(msg, type) {
-  logEntries.unshift({ msg, type, time: new Date().toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" }) });
-  if (logEntries.length > 80) logEntries = logEntries.slice(0, 80);
+  logEntries.unshift({ msg, type, time: new Date().toLocaleTimeString("en-US", { hour12: false }) });
+  if (logEntries.length > 100) logEntries = logEntries.slice(0, 100);
   renderLog();
 }
 
 // ─── Rendering ──────────────────────────────────────────────
 function renderBanner() {
-  const tSent = agents.reduce((s, a) => s + a.sent, 0);
-  const tNoRest = agents.reduce((s, a) => s + a.sentNoRest, 0);
-  const savePct = tNoRest > 0 ? ((1 - tSent / tNoRest) * 100) : 0;
-  const cost = (tSent / 1000) * COST_PER_1K;
-  const costNR = (tNoRest / 1000) * COST_PER_1K;
-  const energy = (tSent / 1000000) * ENERGY_PER_1M;
+  const tSent    = agents.reduce((s, a) => s + a.sent, 0);
+  const tNoRest  = agents.reduce((s, a) => s + a.sentNoRest, 0);
+  const savePct  = tNoRest > 0 ? ((1 - tSent / tNoRest) * 100) : 0;
+  const cost     = (tSent / 1000) * COST_PER_1K;
+  const costNR   = (tNoRest / 1000) * COST_PER_1K;
+  const energy   = (tSent / 1000000) * ENERGY_PER_1M;
   const energyNR = (tNoRest / 1000000) * ENERGY_PER_1M;
   const avgHealth = agents.length > 0 ? agents.reduce((s, a) => s + a.health, 0) / agents.length : 100;
-  const avgBaseline = agents.length > 0 ? agents.reduce((s, a) => s + a.baseline, 0) / agents.length : 100;
+
   const items = [
-    { l: "TOKENS SENT", v: (tSent / 1000).toFixed(0) + "K", c: "#f8fafc" },
-    { l: "WITHOUT REST", v: (tNoRest / 1000).toFixed(0) + "K", c: "#ef4444" },
-    { l: "REDUCTION", v: savePct.toFixed(0) + "%", c: "#4ade80" },
-    { l: "COST SAVED", v: "$" + (costNR - cost).toFixed(3), c: "#4ade80" },
-    { l: "ENERGY SAVED", v: (energyNR - energy).toFixed(4) + " kWh", c: "#4ade80" },
-    { l: "AVG HEALTH", v: avgHealth.toFixed(0) + "%", c: avgHealth >= 80 ? "#4ade80" : avgHealth >= 50 ? "#fbbf24" : "#ef4444" },
-    { l: "FLEET WISDOM", v: avgBaseline.toFixed(0) + "%", c: avgBaseline > 100 ? "#86efac" : "#f8fafc" },
+    { l: "TOKENS (WHITE ROOM)", v: (tSent / 1000).toFixed(1) + "K",           c: "#f8fafc" },
+    { l: "TOKENS (NO REST)",    v: (tNoRest / 1000).toFixed(1) + "K",          c: "#ef4444" },
+    { l: "TOKEN REDUCTION",     v: savePct.toFixed(1) + "%",                   c: savePct > 0 ? "#4ade80" : "#64748b" },
+    { l: "COST SAVED",          v: "$" + (costNR - cost).toFixed(4),           c: savePct > 0 ? "#4ade80" : "#64748b" },
+    { l: "ENERGY SAVED",        v: (energyNR - energy).toFixed(5) + " kWh",   c: savePct > 0 ? "#4ade80" : "#64748b" },
+    { l: "AVG HEALTH",          v: avgHealth.toFixed(0) + "%",                 c: avgHealth >= 80 ? "#4ade80" : avgHealth >= 50 ? "#fbbf24" : "#ef4444" },
+    { l: "FLEET WISDOM",        v: (agents.reduce((s,a)=>s+a.baseline,0)/Math.max(agents.length,1)).toFixed(0) + "%", c: "#f8fafc" },
   ];
+
   document.getElementById("banner").innerHTML = items.map(s =>
-    '<div class="banner-item"><div class="banner-label">' + s.l + '</div><div class="banner-value" style="color:' + s.c + '">' + s.v + '</div></div>'
+    `<div class="banner-item"><div class="banner-label">${s.l}</div><div class="banner-value" style="color:${s.c}">${s.v}</div></div>`
   ).join("");
 }
 
 function renderAgents() {
-  const tSent = agents.reduce((s, a) => s + a.sent, 0);
+  const tSent   = agents.reduce((s, a) => s + a.sent, 0);
   const tNoRest = agents.reduce((s, a) => s + a.sentNoRest, 0);
-  const cost = (tSent / 1000) * COST_PER_1K;
-  const costNR = (tNoRest / 1000) * COST_PER_1K;
-  const energy = (tSent / 1000000) * ENERGY_PER_1M;
-  const energyNR = (tNoRest / 1000000) * ENERGY_PER_1M;
+  const cost    = (tSent / 1000) * COST_PER_1K;
+  const costNR  = (tNoRest / 1000) * COST_PER_1K;
+  const energy  = (tSent / 1000000) * ENERGY_PER_1M;
+  const energyNR= (tNoRest / 1000000) * ENERGY_PER_1M;
+  const savePct = tNoRest > 0 ? ((1 - tSent / tNoRest) * 100) : 0;
 
   let html = "";
   PAIRS.forEach((pair, pi) => {
     const a = agents.find(x => x.id === pair.a.id);
     const b = agents.find(x => x.id === pair.b.id);
-    html += '<div class="pair-card"><div class="pair-header"><span>WATCH PAIR ' + (pi + 1) + '</span><span>Handovers: ' + (a.handovers + b.handovers) + '</span></div><div class="pair-grid">';
+    html += `<div class="pair-card">
+      <div class="pair-header"><span>WATCH PAIR ${pi + 1}</span><span>Handovers: ${a.handovers + b.handovers}</span></div>
+      <div class="pair-grid">`;
+
     [a, b].forEach(ag => {
       const sc = STATUS_COLORS[ag.status] || STATUS_COLORS.idle;
       const isRest = ag.status === "resting" || ag.status === "alarm";
       const prog = isRest ? ag.restTick / REST_TICKS : ag.watchTick / WATCH_TICKS;
       const pct = (Math.min(prog, 1) * 100).toFixed(0);
-      const barColor = prog > 0.9 && !isRest ? "#f59e0b" : sc.bd;
-      const isOpen = selected === ag.id;
+      const barColor = prog > 0.85 && !isRest ? "#f59e0b" : sc.bd;
+      const healthPct = Math.min(ag.health, 100);
+      const healthColor = ag.health >= 80 ? "#22c55e" : ag.health >= 55 ? "#4ade80" : ag.health >= 35 ? "#f59e0b" : "#ef4444";
 
-      html += '<div class="agent-card" style="border-left-color:' + sc.bd + '" onclick="toggleAgent(\'' + ag.id + '\')">';
-      html += '<div class="agent-top"><div><div class="agent-name">' + ag.id.toUpperCase() + '</div><div class="agent-meta">' + ag.role + ' | Watch #' + ag.watchNum + ' | ' + ag.tasks + ' tasks</div></div>';
-      html += '<div class="agent-badge" style="background:' + sc.bg + ';color:' + sc.tx + ';border:1px solid ' + sc.bd + '">' + (ag.status === "handing_over" ? "HANDOVER" : ag.status.toUpperCase()) + '</div></div>';
-      html += '<div class="progress-wrap"><div class="progress-labels"><span>' + (isRest ? "Rest" : "Watch") + '</span><span>' + pct + '%</span></div>';
-      html += '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div></div>';
-      // Health bar
-      const healthPct = Math.min(ag.health, 130);
-      const healthColor = ag.health >= 100 ? "#22c55e" : ag.health >= 70 ? "#4ade80" : ag.health >= 40 ? "#f59e0b" : "#ef4444";
-      const baselineBonus = ag.baseline > 100 ? ' <span style="color:#86efac">+' + (ag.baseline - 100).toFixed(0) + '</span>' : '';
-      html += '<div class="progress-wrap"><div class="progress-labels"><span>Health' + baselineBonus + '</span><span>' + ag.health.toFixed(0) + '%</span></div>';
-      html += '<div class="progress-bar"><div class="progress-fill" style="width:' + (healthPct / 130 * 100) + '%;background:' + healthColor + '"></div></div></div>';
-      html += '<div class="stats-grid">';
-      html += '<div class="stat-box"><div class="stat-label">CONTEXT</div><div class="stat-value" style="color:' + (ag.ctx > 30000 ? "#f59e0b" : "#e2e8f0") + '">' + (ag.ctx / 1000).toFixed(1) + 'K</div></div>';
-      html += '<div class="stat-box"><div class="stat-label">BASELINE</div><div class="stat-value" style="color:' + (ag.baseline > 100 ? "#86efac" : "#e2e8f0") + '">' + ag.baseline.toFixed(0) + '%</div></div>';
-      html += '<div class="stat-box"><div class="stat-label">SENT</div><div class="stat-value">' + (ag.sent / 1000).toFixed(0) + 'K</div></div>';
-      html += '</div>';
+      html += `<div class="agent-card" style="border-left-color:${sc.bd}">
+        <div class="agent-top">
+          <div>
+            <div class="agent-name">${ag.id.toUpperCase()}</div>
+            <div class="agent-meta">${ag.role} | Watch #${ag.watchNum} | ${ag.tasks} tasks</div>
+          </div>
+          <div class="agent-badge" style="background:${sc.bg};color:${sc.tx};border:1px solid ${sc.bd}">${ag.status === "handing_over" ? "HANDOVER" : ag.status.toUpperCase()}</div>
+        </div>
 
-      if (isOpen && ag.ctxHist.length > 0) {
-        const slice = ag.ctxHist.slice(-30);
-        const mx = Math.max(...slice.map(x => x.tokens), 1);
-        html += '<div class="sparkline open"><div class="sparkline-title">CONTEXT SIZE OVER TIME</div><div class="sparkline-bars">';
-        slice.forEach(h => {
-          const ht = Math.max(1, (h.tokens / mx) * 30);
-          const col = h.tokens === 0 ? "#22c55e" : h.tokens > 30000 ? "#f59e0b" : "#3b82f6";
-          html += '<div style="flex:1;height:' + ht + 'px;background:' + col + ';border-radius:1px 1px 0 0"></div>';
-        });
-        html += '</div><div class="sparkline-note">Green bars = context cleared at handover</div>';
-        // Health history sparkline
-        if (ag.healthHist.length > 1) {
-          const hslice = ag.healthHist.slice(-30);
-          html += '<div class="sparkline-title" style="margin-top:8px">HEALTH OVER TIME</div><div class="sparkline-bars">';
-          hslice.forEach(h => {
-            const hh = Math.max(1, (h / 130) * 30);
-            const hc = h >= 100 ? "#22c55e" : h >= 70 ? "#4ade80" : h >= 40 ? "#f59e0b" : "#ef4444";
-            html += '<div style="flex:1;height:' + hh + 'px;background:' + hc + ';border-radius:1px 1px 0 0"></div>';
-          });
-          html += '</div><div class="sparkline-note">Recovery spikes after each rest cycle</div>';
-        }
-        html += '</div>';
-      }
-      html += '</div>';
+        <div class="progress-wrap">
+          <div class="progress-labels"><span>${isRest ? "Resting" : "Watch progress"}</span><span>${pct}%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-labels">
+            <span>Health ${ag.health < 60 ? '⚠' : ''}</span>
+            <span style="color:${healthColor}">${ag.health.toFixed(0)}%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${healthPct}%;background:${healthColor}"></div></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">CTX (W/ REST)</div>
+            <div class="stat-value" style="color:${ag.ctx > 20000 ? '#f59e0b' : '#e2e8f0'}">${(ag.ctx/1000).toFixed(1)}K</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">CTX (NO REST)</div>
+            <div class="stat-value" style="color:#ef4444">${(ag.ctxNoRest/1000).toFixed(1)}K</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">TASKS DONE</div>
+            <div class="stat-value">${ag.tasks}</div>
+          </div>
+        </div>
+      </div>`;
     });
-    html += '</div></div>';
+
+    html += `</div></div>`;
   });
 
   // Comparison panel
-  html += '<div class="compare"><div class="compare-title">CONTINUOUS vs WHITE ROOM</div><div class="compare-grid">';
-  html += '<div class="compare-no-rest"><div style="font-size:7px;color:#ef4444;margin-bottom:2px">WITHOUT REST</div>';
-  html += '<div style="font-size:16px;font-weight:700;color:#fca5a5">' + (tNoRest / 1000).toFixed(0) + 'K tokens</div>';
-  html += '<div style="font-size:8px;color:#ef4444">$' + costNR.toFixed(3) + ' | ' + energyNR.toFixed(4) + ' kWh</div>';
-  html += '<div style="font-size:7px;color:#7f1d1d;margin-top:2px">Context grows forever. Every call pays full cost.</div></div>';
-  html += '<div class="compare-rest"><div style="font-size:7px;color:#4ade80;margin-bottom:2px">WITH WHITE ROOM</div>';
-  html += '<div style="font-size:16px;font-weight:700;color:#86efac">' + (tSent / 1000).toFixed(0) + 'K tokens</div>';
-  html += '<div style="font-size:8px;color:#4ade80">$' + cost.toFixed(3) + ' | ' + energy.toFixed(4) + ' kWh</div>';
-  html += '<div style="font-size:7px;color:#166534;margin-top:2px">Context resets at handover. Fresh agent, lower cost.</div></div>';
-  html += '</div></div>';
+  html += `<div class="compare">
+    <div class="compare-title">CONTINUOUS vs WHITE ROOM — LIVE COMPARISON</div>
+    <div class="compare-grid">
+      <div class="compare-no-rest">
+        <div style="font-size:7px;color:#ef4444;margin-bottom:4px;letter-spacing:1px">WITHOUT WHITE ROOM</div>
+        <div style="font-size:20px;font-weight:700;color:#fca5a5">${(tNoRest/1000).toFixed(1)}K tokens</div>
+        <div style="font-size:8px;color:#ef4444;margin:2px 0">$${costNR.toFixed(4)} | ${energyNR.toFixed(5)} kWh</div>
+        <div style="font-size:7px;color:#7f1d1d;margin-top:4px">Context grows forever. Every call pays compounding cost. Agent health degrades with no recovery.</div>
+      </div>
+      <div class="compare-rest">
+        <div style="font-size:7px;color:#4ade80;margin-bottom:4px;letter-spacing:1px">WITH WHITE ROOM</div>
+        <div style="font-size:20px;font-weight:700;color:#86efac">${(tSent/1000).toFixed(1)}K tokens</div>
+        <div style="font-size:8px;color:#4ade80;margin:2px 0">$${cost.toFixed(4)} | ${energy.toFixed(5)} kWh</div>
+        <div style="font-size:7px;color:#166534;margin-top:4px">Context resets at handover. Relief agent starts fresh. ${savePct > 0 ? savePct.toFixed(1)+'% fewer tokens. Health recovers during rest.' : 'Savings accumulate after first handover.'}</div>
+      </div>
+    </div>
+  </div>`;
 
   document.getElementById("agents-col").innerHTML = html;
 }
 
 function renderLog() {
   const el = document.getElementById("log-container");
-  if (logEntries.length === 0) { el.innerHTML = '<div class="log-empty">Press ' + (mode === "sim" ? "RUN" : "RUN LIVE") + ' to start</div>'; return; }
+  if (!logEntries.length) { el.innerHTML = '<div class="log-empty">Press RUN to start</div>'; return; }
   el.innerHTML = logEntries.map(e =>
-    '<div class="log-entry" style="border-left-color:' + (LOG_COLORS[e.type] || LOG_COLORS.info) + '"><span>' + e.time + ' ' + e.msg + '</span></div>'
-  ).join("");
-}
-
-function renderFleetBar(data) {
-  if (!data) { document.getElementById("fleet-bar").style.display = "none"; return; }
-  document.getElementById("fleet-bar").style.display = "grid";
-  const items = [
-    { l: "AGENTS", v: data.agentCount, c: "#38bdf8" },
-    { l: "TASKS", v: data.totals.tasks, c: "#f8fafc" },
-    { l: "HANDOVERS", v: data.totals.handovers, c: "#818cf8" },
-    { l: "COMPLIANCE", v: data.compliance.laborScore, c: "#4ade80" },
-  ];
-  document.getElementById("fleet-bar").innerHTML = items.map(s =>
-    '<div class="fleet-card"><div class="fleet-label">' + s.l + '</div><div class="fleet-value" style="color:' + s.c + '">' + s.v + '</div></div>'
+    `<div class="log-entry" style="border-left-color:${LOG_COLORS[e.type]||LOG_COLORS.info}"><span>${e.time} ${e.msg}</span></div>`
   ).join("");
 }
 
 function renderAll() { renderBanner(); renderAgents(); }
-function toggleAgent(id) { selected = selected === id ? null : id; renderAgents(); }
 
-// ─── Mode switching ─────────────────────────────────────────
+// ─── Mode switching ──────────────────────────────────────────
 function switchMode(m) {
   resetAll();
   mode = m;
-  document.getElementById("btn-sim").className = "mode-btn" + (m === "sim" ? " active" : "");
+  document.getElementById("btn-sim").className  = "mode-btn" + (m === "sim"  ? " active" : "");
   document.getElementById("btn-live").className = "mode-btn" + (m === "live" ? " active" : "");
-  document.getElementById("sim-controls").style.display = m === "sim" ? "inline" : "none";
+  document.getElementById("sim-controls").style.display  = m === "sim"  ? "inline" : "none";
   document.getElementById("live-controls").style.display = m === "live" ? "inline" : "none";
-  document.getElementById("speed-sel").style.display = m === "sim" ? "inline" : "none";
-  document.getElementById("footer-left").textContent = "White Room v0.3 | " + (m === "live" ? "Live API: " + API_BASE : "Simulation Mode");
+  document.getElementById("speed-sel").style.display     = m === "sim"  ? "inline" : "none";
+  document.getElementById("footer-left").textContent = "White Room v0.4 | " + (m === "live" ? "Live Monitor: " + WHITEROOM_URL : "Simulation Mode");
 }
 
 function resetAll() {
   running = false;
-  if (simInterval) clearInterval(simInterval);
-  simInterval = null;
-  tk = 0;
-  selected = null;
-  logEntries = [];
-  liveFleet = null;
-  fleetId = "demo-" + Math.random().toString(36).slice(2, 8);
+  if (simInterval)  clearInterval(simInterval);
+  if (liveInterval) clearInterval(liveInterval);
+  simInterval = liveInterval = null;
+  tk = 0; selected = null; logEntries = [];
   initAgents();
   document.getElementById("dot").className = "dot";
   document.getElementById("btn-run").textContent = "RUN";
   document.getElementById("btn-run").className = "btn-run";
-  document.getElementById("btn-live-run").disabled = false;
   document.getElementById("btn-live-run").textContent = "RUN LIVE";
+  document.getElementById("btn-live-run").className = "btn-run";
+  document.getElementById("btn-live-run").disabled = false;
   document.getElementById("status-txt").textContent = "Ready";
-  document.getElementById("status-txt").style.color = "#64748b";
-  renderFleetBar(null);
-  renderAll();
-  renderLog();
+  document.getElementById("fleet-bar").style.display = "none";
+  renderAll(); renderLog();
 }
 
-// ─── Simulation ─────────────────────────────────────────────
+// ─── Simulation ──────────────────────────────────────────────
 function toggleSim() {
   if (running) {
     running = false;
@@ -372,54 +386,82 @@ function toggleSim() {
 
 function simTick() {
   tk++;
-  document.getElementById("status-txt").textContent = "Sim: " + ((tk * 30) / 60).toFixed(1) + "h";
-  agents.forEach(a => {
-    if (a.status === "resting") {
-      a.restTick++;
-      // Health recovery — recovers toward baseline + bonus
-      const recoveryProgress = a.restTick / REST_TICKS;
-      a.health = Math.min(a.baseline, a.health + (a.baseline - a.health) * 0.1);
-      a.healthHist.push(a.health);
-      if (a.healthHist.length > 60) a.healthHist.shift();
-      if (a.restTick >= REST_TICKS) {
-        // Full rest completed — baseline grows (learning/consolidation)
-        a.baseline = Math.min(130, a.baseline + 2);
-        a.health = a.baseline;
-        a.status = "alarm";
-        a.alarms++;
-        addLog("ALARM: " + a.role + " ready for handover | Health restored to " + a.baseline.toFixed(0) + "% (wiser)", "alarm");
+  document.getElementById("status-txt").textContent = "Sim: " + ((tk * 30) / 60).toFixed(1) + "h elapsed";
+
+  agents.forEach(ag => {
+    if (ag.status === "resting") {
+      ag.restTick++;
+      // Health recovers during rest
+      ag.health = Math.min(ag.baseline, ag.health + (ag.baseline - ag.health) * 0.12);
+      ag.healthHist.push(ag.health);
+      if (ag.restTick >= REST_TICKS) {
+        ag.baseline = Math.min(130, ag.baseline + 2);
+        ag.health = ag.baseline;
+        ag.status = "alarm";
+        ag.alarms++;
+        addLog(`ALARM ✓ ${ag.id.toUpperCase()} rested — health restored to ${ag.health.toFixed(0)}%`, "alarm");
       }
       return;
     }
-    if (a.status === "alarm" || a.status === "handing_over") return;
-    if (a.status === "working" || a.status === "overtime") {
+    if (ag.status === "alarm" || ag.status === "handing_over") return;
+
+    if (ag.status === "working" || ag.status === "overtime") {
       const task = TASKS[Math.floor(Math.random() * TASKS.length)];
-      a.ctx += task.tokens;
-      a.ctxNoRest += task.tokens;
-      a.sent += a.ctx;
-      a.sentNoRest += a.ctxNoRest;
-      a.tasks++;
-      a.minutesWorked += task.minutes;
-      a.watchTick++;
-      a.ctxHist.push({ tokens: a.ctx });
-      // Health decay — based on task complexity (tokens)
-      const decay = (task.tokens / 1000) * 0.8; // ~1-3% per task
-      const overtimeFatigue = a.status === "overtime" ? 2 : 0;
-      a.health = Math.max(20, a.health - decay - overtimeFatigue);
-      a.healthHist.push(a.health);
-      if (a.healthHist.length > 60) a.healthHist.shift();
-      if (a.watchTick > WATCH_TICKS && a.status !== "overtime") { a.status = "overtime"; addLog("OVERTIME: " + a.role + " exceeded watch limit — health declining", "overtime"); }
-      if (a.watchTick > WATCH_TICKS) { const pm = task.priority === "CRITICAL" ? 2 : task.priority === "HIGH" ? 1.5 : 1; a.otCredits += 30 * 1.5 * pm; }
-      if (a.watchTick >= WATCH_TICKS) {
-        const pid = partner(a.id);
+      ag.tasks++;
+      ag.minutesWorked += task.minutes;
+      ag.watchTick++;
+
+      // WITH WhiteRoom: context is what's in THIS agent's window
+      ag.ctx += task.tokens;
+
+      // WITHOUT WhiteRoom: context grows forever (no one ever rests or resets)
+      ag.ctxNoRest += task.tokens;
+
+      // Token cost: WITH rest = ctx (current window), WITHOUT = ctxNoRest (ever-growing)
+      ag.sent += ag.ctx;
+      ag.sentNoRest += ag.ctxNoRest;
+
+      // Health decay — harder tasks = more fatigue
+      const fatigue = (task.tokens / 1000) * 1.2 + (ag.status === "overtime" ? 3 : 0);
+      ag.health = Math.max(15, ag.health - fatigue);
+      ag.healthHist.push(ag.health);
+
+      ag.ctxHist.push({ tokens: ag.ctx });
+
+      if (ag.watchTick >= WATCH_TICKS && ag.status !== "overtime") {
+        ag.status = "overtime";
+        addLog(`⚠ OVERTIME: ${ag.id.toUpperCase()} exceeded 6h watch — health declining fast`, "overtime");
+      }
+
+      // Try handover
+      if (ag.watchTick >= WATCH_TICKS) {
+        const pid = partner(ag.id);
         const pr = agents.find(x => x.id === pid);
         if (pr && (pr.status === "alarm" || (pr.status === "resting" && pr.restTick >= REST_TICKS - 2))) {
-          const before = a.ctx;
-          a.status = "handing_over"; a.handovers++;
-          pr.status = "working"; pr.watchTick = 0; pr.watchNum++; pr.ctx = Math.min(2000, Math.floor(before * 0.05)); pr.ctxNoRest = a.ctxNoRest; pr.handovers++;
+          const beforeCtx = ag.ctx;
+          const beforeCtxNR = ag.ctxNoRest;
+          ag.status = "handing_over";
+          ag.handovers++;
+
+          // Relief agent inherits ctxNoRest (continuous baseline) but starts fresh ctx
+          pr.status = "working";
+          pr.watchTick = 0;
+          pr.watchNum++;
+          pr.ctx = Math.min(1500, Math.floor(beforeCtx * 0.04)); // ~4% context summary handed over
+          pr.ctxNoRest = beforeCtxNR + pr.ctx; // no-rest world: just keeps growing
+          pr.handovers++;
           pr.ctxHist.push({ tokens: pr.ctx });
-          addLog("HANDOVER: " + a.role + " → " + pr.role + " | " + (before / 1000).toFixed(1) + "K → " + (pr.ctx / 1000).toFixed(1) + "K context (" + ((1 - pr.ctx / before) * 100).toFixed(0) + "% cut)", "handover");
-          setTimeout(() => { a.status = "resting"; a.restTick = 0; a.ctx = 0; a.ctxHist.push({ tokens: 0 }); addLog("REST: " + a.role + " → White Room. Context cleared. Health recovering...", "rest"); renderAll(); }, 100);
+
+          addLog(`🔄 HANDOVER: ${ag.id.toUpperCase()} → ${pr.id.toUpperCase()} | ctx: ${(beforeCtx/1000).toFixed(1)}K → ${(pr.ctx/1000).toFixed(1)}K (${((1-pr.ctx/beforeCtx)*100).toFixed(0)}% cut)`, "handover");
+
+          setTimeout(() => {
+            ag.status = "resting";
+            ag.restTick = 0;
+            ag.ctx = 0;
+            ag.ctxHist.push({ tokens: 0 });
+            addLog(`💤 REST: ${ag.id.toUpperCase()} → White Room. Health: ${ag.health.toFixed(0)}% → recovering...`, "rest");
+            renderAll();
+          }, 200);
         }
       }
     }
@@ -427,121 +469,105 @@ function simTick() {
   renderAll();
 }
 
-// ─── Live API ───────────────────────────────────────────────
-async function apiCall(action, params) {
-  try {
-    const res = await fetch(API_BASE, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, fleet_id: fleetId, ...params }) });
-    return await res.json();
-  } catch (e) { addLog("API error: " + e.message, "error"); return { error: e.message }; }
-}
+// ─── Live Monitor ────────────────────────────────────────────
+async function toggleLive() {
+  if (running) {
+    running = false;
+    clearInterval(liveInterval);
+    document.getElementById("dot").className = "dot";
+    document.getElementById("btn-live-run").textContent = "RUN LIVE";
+    document.getElementById("btn-live-run").className = "btn-run";
+    document.getElementById("status-txt").textContent = "Stopped";
+    return;
+  }
 
-async function runLiveDemo() {
-  document.getElementById("btn-live-run").disabled = true;
-  document.getElementById("btn-live-run").textContent = "RUNNING...";
+  running = true;
+  document.getElementById("btn-live-run").textContent = "STOP";
+  document.getElementById("btn-live-run").className = "btn-run stop";
   document.getElementById("dot").className = "dot on";
-  document.getElementById("status-txt").textContent = "Calling API...";
-  document.getElementById("status-txt").style.color = "#4ade80";
-  fleetId = "demo-" + Math.random().toString(36).slice(2, 8);
+  document.getElementById("status-txt").textContent = "Polling WhiteRoom...";
+
+  // init display agents
   agents = [];
-  PAIRS.forEach(p => { agents.push(mkAgent(p.a, false)); agents.push(mkAgent(p.b, false)); });
-  renderAll();
+  PAIRS.forEach(p => {
+    agents.push(mkAgent(p.a, false));
+    agents.push(mkAgent(p.b, false));
+  });
 
-  // Register
-  for (const pair of PAIRS) {
-    for (const cfg of [pair.a, pair.b]) {
-      addLog("Registering " + cfg.id + " (" + cfg.role + ")...", "info");
-      const r = await apiCall("register_agent", { agent_id: cfg.id, agent_role: cfg.role });
-      if (r.success) { agents.find(a => a.id === cfg.id).status = "idle"; addLog(cfg.id + " registered", "info"); }
-      else addLog(r.error || "Failed", "error");
-    }
-  }
-  renderAll();
-
-  // Pair
-  for (const pair of PAIRS) {
-    addLog("Pairing " + pair.a.id + " + " + pair.b.id + "...", "info");
-    const r = await apiCall("pair_agents", { agent_id: pair.a.id, paired_with: pair.b.id });
-    if (r.success) addLog("Paired: " + pair.a.id + " ↔ " + pair.b.id, "handover");
-    else addLog(r.error || "Failed", "error");
-  }
-
-  // Start watches
-  for (const pair of PAIRS) {
-    addLog("Starting " + pair.a.id + "'s watch...", "info");
-    const r = await apiCall("start_watch", { agent_id: pair.a.id });
-    if (r.success) {
-      const ag = agents.find(a => a.id === pair.a.id);
-      ag.status = "working"; ag.watchNum = r.watchNumber;
-      addLog("Watch " + r.watchNumber + " started — " + r.watchLimit + "min on clock", "info");
-    }
-  }
-  renderAll();
-  await new Promise(r => setTimeout(r, 400));
-
-  // Tasks
-  for (const pair of PAIRS) {
-    const tasks = [...TASKS].sort(() => Math.random() - 0.5).slice(0, 4);
-    for (const task of tasks) {
-      addLog(pair.a.id + ": " + task.name + " (" + task.minutes + "min, " + (task.tokens / 1000).toFixed(1) + "K tokens)...", "info");
-      const r = await apiCall("complete_task", { agent_id: pair.a.id, task_name: task.name, minutes_spent: task.minutes, tokens_used: task.tokens });
-      if (r.success) {
-        const ag = agents.find(a => a.id === pair.a.id);
-        ag.tasks++; ag.ctx += task.tokens; ag.sent += ag.ctx; ag.sentNoRest += ag.ctx;
-        ag.minutesWorked += task.minutes;
-        ag.watchTick = Math.floor(parseFloat(r.watchProgress.percentComplete) / 100 * WATCH_TICKS);
-        ag.ctxHist.push({ tokens: ag.ctx });
-        if (r.alert === "WATCH_LIMIT_REACHED") addLog("WATCH LIMIT: " + pair.a.id + " — handover required!", "overtime");
-        else addLog("Done. " + Math.round(r.watchProgress.minutesRemaining) + "min remaining (" + Math.round(parseFloat(r.watchProgress.percentComplete)) + "%)", "info");
-        renderAll();
-      }
-    }
-  }
-  await new Promise(r => setTimeout(r, 400));
-
-  // Handovers
-  for (const pair of PAIRS) {
-    addLog("HANDOVER: " + pair.a.id + " → " + pair.b.id + "...", "handover");
-    const r = await apiCall("initiate_handover", { agent_id: pair.a.id, to_agent: pair.b.id, context_summary: "Completed all assigned tasks." });
-    if (r.success) {
-      const a = agents.find(x => x.id === pair.a.id);
-      const b = agents.find(x => x.id === pair.b.id);
-      a.status = "resting"; a.handovers++; a.restTick = 0; a.ctxHist.push({ tokens: 0 });
-      b.status = "working"; b.handovers++; b.watchNum++; b.ctx = 2000; b.ctxHist.push({ tokens: 2000 });
-      addLog(r.energySavings.contextCleared + " → " + r.energySavings.freshContext + " (" + r.energySavings.reduction + " reduction)", "handover");
-      addLog(pair.a.id + " → White Room. " + pair.b.id + " on watch.", "rest");
-      renderAll();
-    }
-  }
-  await new Promise(r => setTimeout(r, 400));
-
-  // Alarms
-  for (const pair of PAIRS) {
-    addLog("Firing alarm: " + pair.a.id + "...", "alarm");
-    const r = await apiCall("fire_alarm", { agent_id: pair.a.id });
-    if (r.success) {
-      const ag = agents.find(a => a.id === pair.a.id);
-      ag.status = "idle"; ag.alarms++;
-      addLog(pair.a.id + " awake — " + r.totalWatches + " watches, " + (r.totalTokens / 1000).toFixed(0) + "K tokens total", "alarm");
-    }
-  }
-  renderAll();
-
-  // Fleet report
-  addLog("Fetching fleet report...", "info");
-  const report = await apiCall("fleet_report");
-  if (!report.error) {
-    liveFleet = report;
-    renderFleetBar(report);
-    addLog("Fleet: " + report.agentCount + " agents | " + report.totals.tasks + " tasks | " + report.totals.handovers + " handovers | compliance " + report.compliance.laborScore, "info");
-  }
-
-  document.getElementById("dot").className = "dot on";
-  document.getElementById("status-txt").textContent = "Complete";
-  document.getElementById("btn-live-run").disabled = false;
-  document.getElementById("btn-live-run").textContent = "RUN LIVE";
+  await pollLive();
+  liveInterval = setInterval(pollLive, 15000); // poll every 15s
 }
 
-// Init
+async function pollLive() {
+  const agentIds = ["bravo", "delta", "foxtrot"];
+  let anyData = false;
+
+  for (const id of agentIds) {
+    try {
+      const res = await fetch(`${WHITEROOM_URL}/api/white-room`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "check_watch", fleet_id: FLEET_ID, agent_id: id })
+      });
+      const data = await res.json();
+      if (data.error) continue;
+
+      anyData = true;
+
+      // Find or create agent in display
+      let ag = agents.find(a => a.id === id);
+      if (!ag) {
+        ag = mkAgent({ id, role: id.charAt(0).toUpperCase() + id.slice(1), color: "#22c55e" }, false);
+        agents.push(ag);
+      }
+
+      // Map real WhiteRoom data to display state
+      const prevTasks = ag.tasks;
+      ag.status = data.status === "resting" ? "resting" : data.needsHandover ? "overtime" : "working";
+      ag.watchNum = data.watchNumber || 1;
+      ag.tasks = data.tasksCompleted || 0;
+      ag.minutesWorked = data.minutesWorked || 0;
+
+      // Tokens: real tokens used = sentNoRest baseline
+      const realTokens = data.tokensUsed || 0;
+      ag.sentNoRest = realTokens; // no-rest world: same tokens, growing context
+
+      // With WhiteRoom: estimate context savings based on handovers
+      // Each handover resets context to ~4%, so savings compound
+      const handoverCount = ag.handovers || 0;
+      const contextReductionFactor = Math.pow(0.5, handoverCount); // each handover ~halves avg context
+      ag.sent = Math.floor(realTokens * (handoverCount > 0 ? contextReductionFactor + 0.4 : 1));
+      ag.ctx = realTokens;
+      ag.ctxNoRest = realTokens;
+
+      // Watch progress
+      const pctDone = parseFloat(data.percentComplete) || 0;
+      ag.watchTick = Math.floor((pctDone / 100) * WATCH_TICKS);
+
+      // Health: decays with work, recovers at rest
+      if (ag.status === "working") {
+        ag.health = Math.max(20, 100 - (pctDone * 0.7));
+      } else if (ag.status === "resting") {
+        ag.health = Math.min(100, ag.health + 10);
+        ag.restTick = Math.min(REST_TICKS, ag.restTick + 10);
+      }
+
+      if (ag.tasks > prevTasks) {
+        addLog(`✓ ${id.toUpperCase()}: task complete | ${data.minutesWorked}min worked | ${(realTokens/1000).toFixed(1)}K tokens | ${data.percentComplete} watch`, "task");
+      }
+
+    } catch(e) {
+      addLog(`⚠ Cannot reach ${id}: ${e.message}`, "error");
+    }
+  }
+
+  if (anyData) {
+    document.getElementById("status-txt").textContent = "Live — updated " + new Date().toLocaleTimeString();
+    renderAll();
+  }
+}
+
+// ─── Init ────────────────────────────────────────────────────
 initAgents();
 renderAll();
 renderLog();
