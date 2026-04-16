@@ -37,7 +37,7 @@ class WhiteRoom {
   }
 
   // ─── Register an agent ────────────────────────────────────
-  registerAgent(fleetId, agentId, role = "worker", watchMinutes = 360, restMinutes = 360, handoverMinutes = 5) {
+  registerAgent(fleetId, agentId, role = "worker", watchMinutes = 10, restMinutes = 10, handoverMinutes = 5) {
     const fleet = this._getOrCreateFleet(fleetId);
     if (fleet.agents[agentId]) {
       return { error: `Agent '${agentId}' already registered in fleet '${fleetId}'.` };
