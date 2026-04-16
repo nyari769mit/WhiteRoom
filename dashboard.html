@@ -6,80 +6,70 @@
 <title>WhiteRoom — Agent Governance Dashboard</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #050810; color: #e2e8f0; font-family: 'SF Mono','JetBrains Mono','Fira Code',monospace; font-size: 12px; }
+body { background: #050810; color: #e2e8f0; font-family: 'SF Mono','JetBrains Mono','Fira Code',monospace; font-size: 12px; overflow-x: hidden; }
 button { font-family: inherit; cursor: pointer; }
-select { font-family: inherit; }
 
 .header { background: #0a0f1a; border-bottom: 1px solid #1e293b; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
 .header-left { display: flex; align-items: center; gap: 10px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #475569; transition: all 0.3s; }
 .dot.on { background: #22c55e; box-shadow: 0 0 12px #22c55e; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { box-shadow: 0 0 12px #22c55e; } 50% { box-shadow: 0 0 20px #22c55e; } }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 12px #22c55e; } 50% { box-shadow: 0 0 24px #22c55e; } }
 .title { font-size: 15px; font-weight: 800; letter-spacing: 3px; }
 .subtitle { font-size: 9px; color: #475569; border-left: 1px solid #334155; padding-left: 10px; }
-.header-right { display: flex; gap: 6px; align-items: center; }
-
-.mode-toggle { display: flex; background: #1e293b; border-radius: 5px; overflow: hidden; border: 1px solid #334155; }
-.mode-btn { background: transparent; color: #64748b; border: none; padding: 4px 10px; font-size: 10px; font-weight: 600; }
-.mode-btn.active { background: #334155; color: #e2e8f0; }
-
-.btn-run { background: #166534; color: #fff; border: none; border-radius: 5px; padding: 5px 14px; font-size: 11px; font-weight: 700; }
-.btn-run.stop { background: #991b1b; }
-.btn-run:disabled { background: #475569; cursor: not-allowed; }
-.btn-reset { background: transparent; color: #64748b; border: 1px solid #334155; border-radius: 5px; padding: 5px 10px; font-size: 11px; }
-.speed-sel { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 5px; padding: 5px 8px; font-size: 11px; }
+.header-right { display: flex; gap: 8px; align-items: center; }
+.btn { border: none; border-radius: 5px; padding: 5px 14px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-green { background: #166534; color: #fff; }
+.btn-red { background: #991b1b; color: #fff; }
+.btn-outline { background: transparent; color: #64748b; border: 1px solid #334155; }
 .status-txt { font-size: 9px; color: #64748b; }
+.fleet-sel { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 5px; padding: 5px 8px; font-size: 11px; }
 
-.banner { background: linear-gradient(90deg,#052e16 0%,#0a0f1a 50%,#0c4a6e 100%); padding: 10px 20px; display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; }
-.banner-item { text-align: center; padding: 4px 0; }
-.banner-label { font-size: 7px; color: #64748b; letter-spacing: 1.5px; }
-.banner-value { font-size: 15px; font-weight: 700; transition: color 0.5s; }
+.banner { background: linear-gradient(90deg,#052e16 0%,#0a0f1a 40%,#0c4a6e 100%); padding: 12px 20px; display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; border-bottom: 1px solid #1e293b; }
+.banner-item { text-align: center; }
+.banner-label { font-size: 7px; color: #64748b; letter-spacing: 1.5px; margin-bottom: 3px; }
+.banner-value { font-size: 18px; font-weight: 700; transition: all 0.5s; }
 
-.fleet-bar { padding: 10px 20px; background: #0a0f1a; border-bottom: 1px solid #1e293b; display: none; grid-template-columns: repeat(4,1fr); gap: 8px; }
-.fleet-card { background: #050810; border-radius: 6px; padding: 8px 12px; text-align: center; border: 1px solid #1e293b; }
-.fleet-label { font-size: 7px; color: #64748b; letter-spacing: 1.5px; }
-.fleet-value { font-size: 18px; font-weight: 700; }
+.main { display: grid; grid-template-columns: 1fr 300px; height: calc(100vh - 160px); }
+.agents-col { padding: 12px; overflow-y: auto; }
+.log-col { border-left: 1px solid #1e293b; display: flex; flex-direction: column; }
+.log-header { padding: 10px 12px; border-bottom: 1px solid #1e293b; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+.log-body { flex: 1; overflow-y: auto; padding: 8px; }
+.log-entry { margin-bottom: 4px; padding: 5px 7px; background: #0a0f1a; border-radius: 3px; border-left: 2px solid #334155; }
+.log-time { font-size: 8px; color: #475569; }
+.log-msg { font-size: 9px; color: #cbd5e1; line-height: 1.4; }
+.log-empty { font-size: 10px; color: #334155; text-align: center; padding: 40px; }
 
-.main { display: grid; grid-template-columns: 1fr 280px; min-height: calc(100vh - 180px); }
-.agents-col { padding: 12px 16px; overflow-y: auto; }
-.log-col { border-left: 1px solid #1e293b; background: #050810; padding: 10px; overflow-y: auto; }
+.agents-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.agent-card { background: #0a0f1a; border-radius: 8px; border: 1px solid #1e293b; border-left: 3px solid #475569; padding: 12px; transition: border-color 0.4s; }
 
-.pair-card { margin-bottom: 12px; background: #0a0f1a; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
-.pair-header { padding: 6px 12px; background: #0f172a; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; }
-.pair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #1e293b; }
+.agent-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.agent-name { font-size: 13px; font-weight: 800; letter-spacing: 1px; }
+.agent-role { font-size: 8px; color: #64748b; margin-top: 2px; }
+.agent-meta { font-size: 7px; color: #475569; margin-top: 1px; }
+.badge { font-size: 7px; font-weight: 700; padding: 3px 7px; border-radius: 10px; letter-spacing: 1px; white-space: nowrap; }
 
-.agent-card { background: #0a0f1a; padding: 10px 12px; border-left: 3px solid #475569; transition: border-color 0.3s; }
-.agent-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
-.agent-name { font-size: 11px; font-weight: 700; color: #e2e8f0; }
-.agent-meta { font-size: 8px; color: #475569; }
-.agent-badge { font-size: 7px; font-weight: 700; padding: 2px 6px; border-radius: 6px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+.progress-section { margin-bottom: 6px; }
+.progress-row { display: flex; justify-content: space-between; font-size: 7px; color: #475569; margin-bottom: 2px; }
+.bar { height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
+.bar-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
 
-.progress-wrap { margin-bottom: 5px; }
-.progress-labels { display: flex; justify-content: space-between; font-size: 7px; color: #475569; margin-bottom: 2px; }
-.progress-bar { height: 3px; background: #1e293b; border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease, background 0.5s; }
+.stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 6px; }
+.stat { background: #050810; border-radius: 4px; padding: 4px 6px; text-align: center; border: 1px solid #0f172a; }
+.stat-label { font-size: 6px; color: #475569; letter-spacing: 0.5px; margin-bottom: 1px; }
+.stat-val { font-size: 12px; font-weight: 700; }
 
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; }
-.stat-box { background: #050810; border-radius: 3px; padding: 3px 4px; text-align: center; }
-.stat-label { font-size: 6px; color: #475569; }
-.stat-value { font-size: 11px; font-weight: 700; color: #e2e8f0; transition: color 0.5s; }
+.compare { background: #0a0f1a; border: 1px solid #1e293b; border-radius: 8px; padding: 12px; margin-top: 8px; }
+.compare-title { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin-bottom: 10px; }
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.compare-box { border-radius: 6px; padding: 10px 12px; }
+.compare-bad { background: #1c0f0f; border: 1px solid #7f1d1d; }
+.compare-good { background: #052e16; border: 1px solid #166534; }
+.compare-label { font-size: 7px; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
+.compare-tokens { font-size: 22px; font-weight: 800; margin-bottom: 3px; }
+.compare-meta { font-size: 8px; margin-bottom: 4px; }
+.compare-desc { font-size: 7px; line-height: 1.5; }
 
-.compare { background: #0a0f1a; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 14px; margin-top: 8px; }
-.compare-title { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin-bottom: 8px; }
-.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.compare-no-rest { background: #1c0f0f; border: 1px solid #7f1d1d; border-radius: 6px; padding: 8px 10px; }
-.compare-rest { background: #052e16; border: 1px solid #166534; border-radius: 6px; padding: 8px 10px; }
-
-.log-title { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin-bottom: 8px; }
-.log-empty { font-size: 10px; color: #334155; text-align: center; margin-top: 40px; }
-.log-entry { margin-bottom: 3px; padding: 4px 6px; background: #0a0f1a; border-radius: 3px; border-left: 2px solid #334155; }
-.log-entry span { font-size: 9px; color: #cbd5e1; line-height: 1.3; }
-
-.footer { border-top: 1px solid #1e293b; padding: 5px 20px; display: flex; justify-content: space-between; font-size: 7px; color: #334155; background: #050810; }
-.copyright { border-top: 1px solid #1e293b; padding: 8px 20px; text-align: center; font-size: 8px; color: #475569; background: #050810; }
-
-.task-flash { animation: taskFlash 0.4s ease; }
-@keyframes taskFlash { 0% { background: #0f2a1a; } 100% { background: #0a0f1a; } }
+.footer { border-top: 1px solid #1e293b; padding: 6px 20px; display: flex; justify-content: space-between; font-size: 7px; color: #334155; background: #050810; }
 </style>
 </head>
 <body>
@@ -88,525 +78,251 @@ select { font-family: inherit; }
   <div class="header-left">
     <div class="dot" id="dot"></div>
     <span class="title">WHITE ROOM</span>
-    <span class="subtitle">6h ON / 5min HANDOVER / 6h REST</span>
+    <span class="subtitle">10min ON / 5min HANDOVER / 10min REST</span>
   </div>
   <div class="header-right">
-    <div class="mode-toggle">
-      <button class="mode-btn active" id="btn-sim" onclick="switchMode('sim')">SIM</button>
-      <button class="mode-btn" id="btn-live" onclick="switchMode('live')">LIVE</button>
-    </div>
-    <span class="status-txt" id="status-txt">Ready</span>
-    <div id="sim-controls">
-      <button class="btn-run" id="btn-run" onclick="toggleSim()">RUN</button>
-    </div>
-    <div id="live-controls" style="display:none;">
-      <button class="btn-run" id="btn-live-run" onclick="toggleLive()">RUN LIVE</button>
-    </div>
-    <select class="speed-sel" id="speed-sel" onchange="spd=Number(this.value)">
-      <option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
+    <select class="fleet-sel" id="fleet-sel">
+      <option value="event-planning-fleet">event-planning-fleet</option>
+      <option value="default">default (CrewAI)</option>
+      <option value="crewai-fleet">crewai-fleet</option>
     </select>
-    <button class="btn-reset" onclick="resetAll()">Reset</button>
+    <span class="status-txt" id="status-txt">Stopped</span>
+    <button class="btn btn-green" id="btn-run" onclick="toggle()">RUN LIVE</button>
+    <button class="btn btn-outline" onclick="resetDash()">Reset</button>
   </div>
 </div>
 
-<div class="banner" id="banner"></div>
-<div class="fleet-bar" id="fleet-bar"></div>
+<div class="banner">
+  <div class="banner-item"><div class="banner-label">TASKS COMPLETED</div><div class="banner-value" id="b-tasks" style="color:#f8fafc">—</div></div>
+  <div class="banner-item"><div class="banner-label">TOKENS (W/ WHITEROOM)</div><div class="banner-value" id="b-tokens" style="color:#86efac">—</div></div>
+  <div class="banner-item"><div class="banner-label">TOKENS SAVED</div><div class="banner-value" id="b-saved" style="color:#4ade80">—</div></div>
+  <div class="banner-item"><div class="banner-label">COST SAVED</div><div class="banner-value" id="b-cost" style="color:#4ade80">—</div></div>
+  <div class="banner-item"><div class="banner-label">ENERGY SAVED</div><div class="banner-value" id="b-energy" style="color:#38bdf8">—</div></div>
+  <div class="banner-item"><div class="banner-label">HANDOVERS</div><div class="banner-value" id="b-handovers" style="color:#818cf8">—</div></div>
+</div>
 
 <div class="main">
-  <div class="agents-col" id="agents-col"></div>
+  <div class="agents-col">
+    <div class="agents-grid" id="agents-grid">
+      <div style="color:#334155;padding:40px;text-align:center;grid-column:span 2;font-size:11px">Press RUN LIVE to connect to WhiteRoom</div>
+    </div>
+    <div class="compare" id="compare" style="display:none">
+      <div class="compare-title">CONTINUOUS vs WHITE ROOM — LIVE COMPARISON</div>
+      <div class="compare-grid">
+        <div class="compare-box compare-bad">
+          <div class="compare-label" style="color:#ef4444">WITHOUT WHITE ROOM</div>
+          <div class="compare-tokens" style="color:#fca5a5" id="c-no-rest">0K tokens</div>
+          <div class="compare-meta" style="color:#ef4444" id="c-no-rest-meta">$0.0000 | 0.00000 kWh</div>
+          <div class="compare-desc" style="color:#7f1d1d">Context grows forever. Every call pays the full compounding cost. Agent health degrades with no recovery.</div>
+        </div>
+        <div class="compare-box compare-good">
+          <div class="compare-label" style="color:#4ade80">WITH WHITE ROOM</div>
+          <div class="compare-tokens" style="color:#86efac" id="c-rest">0K tokens</div>
+          <div class="compare-meta" style="color:#4ade80" id="c-rest-meta">$0.0000 | 0.00000 kWh</div>
+          <div class="compare-desc" style="color:#166534" id="c-desc">Context resets at handover. Relief agent starts fresh. Savings accumulate after first handover.</div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="log-col">
-    <div class="log-title">AUDIT LOG</div>
-    <div id="log-container"><div class="log-empty">Press RUN to start</div></div>
+    <div class="log-header">
+      <span>AUDIT LOG</span>
+      <span id="log-count" style="color:#475569">0 events</span>
+    </div>
+    <div class="log-body" id="log-body">
+      <div class="log-empty">Press RUN LIVE to start</div>
+    </div>
   </div>
 </div>
 
 <div class="footer">
-  <span id="footer-left">White Room v0.4 | Simulation Mode</span>
-  <span>Maritime-inspired agent labor governance | MIT Sloan 15.S12</span>
+  <span>White Room v0.5 | Live Monitor: https://whiteroom-m4j4.onrender.com</span>
+  <span>Maritime-inspired agent labor governance | MIT Sloan 15.S12 | © 2026 Nyari Nain · Artory.AI</span>
 </div>
-<div class="copyright">© 2026 Nyari Nain · MIT Sloan · Artory.AI — All rights reserved</div>
 
 <script>
-// ─── Config ─────────────────────────────────────────────────
-const WHITEROOM_URL = "https://whiteroom-m4j4.onrender.com";
-const WATCH_TICKS = 72, REST_TICKS = 72;
+const WHITEROOM = "https://whiteroom-m4j4.onrender.com";
+const COST_PER_1K = 0.003;
+const ENERGY_PER_1M = 0.4;
+const POLL_MS = 10000;
 
-// Auto-discovered fleets and agents — no hardcoding needed
-const KNOWN_FLEETS = ["event-planning-fleet", "default", "crewai-fleet"];
-const COST_PER_1K = 0.003, ENERGY_PER_1M = 0.4;
+let running = false, pollTimer = null;
+let logEvents = new Set();
+let logEntries = [];
+let agentState = {};
 
-const PAIRS = [
-  { a: { id: "alpha",   role: "Lead Planner",    color: "#3b82f6" },
-    b: { id: "bravo",   role: "Planner (Relief)", color: "#6366f1" } },
-  { a: { id: "charlie", role: "Coordinator",      color: "#8b5cf6" },
-    b: { id: "delta",   role: "Coord. (Relief)",  color: "#a78bfa" } },
-];
-
-const TASKS = [
-  { name: "Venue coordination",   tokens: 2800, priority: "HIGH",     minutes: 45 },
-  { name: "Vendor negotiation",   tokens: 1900, priority: "NORMAL",   minutes: 30 },
-  { name: "Guest list review",    tokens: 3200, priority: "HIGH",     minutes: 50 },
-  { name: "Budget reconciliation",tokens: 1200, priority: "NORMAL",   minutes: 20 },
-  { name: "Catering brief",       tokens: 800,  priority: "CRITICAL", minutes: 15 },
-  { name: "Timeline draft",       tokens: 2100, priority: "NORMAL",   minutes: 35 },
-  { name: "RSVP follow-up",       tokens: 1500, priority: "HIGH",     minutes: 25 },
-  { name: "Decor planning",       tokens: 2600, priority: "NORMAL",   minutes: 40 },
-];
-
-const STATUS_COLORS = {
-  working:      { bg: "#052e16", bd: "#22c55e", tx: "#4ade80" },
-  overtime:     { bg: "#451a03", bd: "#f59e0b", tx: "#fbbf24" },
-  handing_over: { bg: "#1e1b4b", bd: "#818cf8", tx: "#a5b4fc" },
-  resting:      { bg: "#0c4a6e", bd: "#0ea5e9", tx: "#38bdf8" },
-  alarm:        { bg: "#4c0519", bd: "#f43f5e", tx: "#fb7185" },
-  idle:         { bg: "#1e293b", bd: "#475569", tx: "#94a3b8" },
-};
-const LOG_COLORS = {
-  handover: "#818cf8", overtime: "#f59e0b", rest: "#0ea5e9",
-  alarm: "#f43f5e", error: "#ef4444", info: "#334155", task: "#22c55e"
+const SC = {
+  working:  { border: "#22c55e", badgeBg: "#052e16", badgeTx: "#4ade80", badgeBd: "#22c55e", bar: "#22c55e" },
+  overtime: { border: "#f59e0b", badgeBg: "#451a03", badgeTx: "#fbbf24", badgeBd: "#f59e0b", bar: "#f59e0b" },
+  resting:  { border: "#0ea5e9", badgeBg: "#0c4a6e", badgeTx: "#38bdf8", badgeBd: "#0ea5e9", bar: "#0ea5e9" },
+  idle:     { border: "#475569", badgeBg: "#1e293b", badgeTx: "#94a3b8", badgeBd: "#475569", bar: "#475569" },
 };
 
-// ─── State ──────────────────────────────────────────────────
-let mode = "sim", running = false, simInterval = null, liveInterval = null;
-let spd = 1, tk = 0, selected = null;
-let agents = [], logEntries = [];
+const LOG_COLORS = { task:"#22c55e", handover:"#818cf8", rest:"#0ea5e9", alarm:"#f43f5e", info:"#334155" };
 
-function mkAgent(cfg, active) {
-  return {
-    ...cfg,
-    status: active ? "working" : "resting",
-    watchTick: 0, restTick: active ? 0 : REST_TICKS,
-    watchNum: active ? 1 : 0,
-    tasks: 0, handovers: 0, alarms: 0,
-    ctx: 0,         // tokens WITH whitroom (context resets at handover)
-    ctxNoRest: 0,   // tokens WITHOUT whiteroom (context grows forever)
-    sent: 0,        // cumulative tokens sent WITH whiteroom
-    sentNoRest: 0,  // cumulative tokens sent WITHOUT whiteroom
-    health: active ? 100 : 100,
-    baseline: 100,
-    minutesWorked: 0,
-    ctxHist: [],
-    healthHist: [100],
-  };
-}
+function getFleet() { return document.getElementById("fleet-sel").value; }
 
-function initAgents() {
-  agents = [];
-  PAIRS.forEach(p => {
-    agents.push(mkAgent(p.a, true));
-    agents.push(mkAgent(p.b, false));
+async function api(body) {
+  const r = await fetch(`${WHITEROOM}/api/white-room`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...body, fleet_id: getFleet() })
   });
+  return r.json();
 }
 
-function partner(id) {
-  for (const p of PAIRS) {
-    if (p.a.id === id) return p.b.id;
-    if (p.b.id === id) return p.a.id;
-  }
-  return null;
+function toggle() { running ? stopPolling() : startPolling(); }
+
+function startPolling() {
+  running = true;
+  document.getElementById("dot").className = "dot on";
+  document.getElementById("btn-run").textContent = "STOP";
+  document.getElementById("btn-run").className = "btn btn-red";
+  document.getElementById("status-txt").textContent = "Connecting...";
+  poll();
+  pollTimer = setInterval(poll, POLL_MS);
 }
 
-function addLog(msg, type) {
-  logEntries.unshift({ msg, type, time: new Date().toLocaleTimeString("en-US", { hour12: false }) });
-  if (logEntries.length > 100) logEntries = logEntries.slice(0, 100);
-  renderLog();
+function stopPolling() {
+  running = false;
+  clearInterval(pollTimer);
+  document.getElementById("dot").className = "dot";
+  document.getElementById("btn-run").textContent = "RUN LIVE";
+  document.getElementById("btn-run").className = "btn btn-green";
+  document.getElementById("status-txt").textContent = "Stopped";
 }
 
-// ─── Rendering ──────────────────────────────────────────────
-function renderBanner() {
-  const tSent    = agents.reduce((s, a) => s + a.sent, 0);
-  const tNoRest  = agents.reduce((s, a) => s + a.sentNoRest, 0);
-  const savePct  = tNoRest > 0 ? ((1 - tSent / tNoRest) * 100) : 0;
-  const cost     = (tSent / 1000) * COST_PER_1K;
-  const costNR   = (tNoRest / 1000) * COST_PER_1K;
-  const energy   = (tSent / 1000000) * ENERGY_PER_1M;
-  const energyNR = (tNoRest / 1000000) * ENERGY_PER_1M;
-  const avgHealth = agents.length > 0 ? agents.reduce((s, a) => s + a.health, 0) / agents.length : 100;
-
-  const items = [
-    { l: "TOKENS (WHITE ROOM)", v: (tSent / 1000).toFixed(1) + "K",           c: "#f8fafc" },
-    { l: "TOKENS (NO REST)",    v: (tNoRest / 1000).toFixed(1) + "K",          c: "#ef4444" },
-    { l: "TOKEN REDUCTION",     v: savePct.toFixed(1) + "%",                   c: savePct > 0 ? "#4ade80" : "#64748b" },
-    { l: "COST SAVED",          v: "$" + (costNR - cost).toFixed(4),           c: savePct > 0 ? "#4ade80" : "#64748b" },
-    { l: "ENERGY SAVED",        v: (energyNR - energy).toFixed(5) + " kWh",   c: savePct > 0 ? "#4ade80" : "#64748b" },
-    { l: "AVG HEALTH",          v: avgHealth.toFixed(0) + "%",                 c: avgHealth >= 80 ? "#4ade80" : avgHealth >= 50 ? "#fbbf24" : "#ef4444" },
-    { l: "FLEET WISDOM",        v: (agents.reduce((s,a)=>s+a.baseline,0)/Math.max(agents.length,1)).toFixed(0) + "%", c: "#f8fafc" },
-  ];
-
-  document.getElementById("banner").innerHTML = items.map(s =>
-    `<div class="banner-item"><div class="banner-label">${s.l}</div><div class="banner-value" style="color:${s.c}">${s.v}</div></div>`
-  ).join("");
+function resetDash() {
+  stopPolling();
+  logEvents.clear(); logEntries = []; agentState = {};
+  document.getElementById("agents-grid").innerHTML = '<div style="color:#334155;padding:40px;text-align:center;grid-column:span 2;font-size:11px">Press RUN LIVE to connect to WhiteRoom</div>';
+  document.getElementById("compare").style.display = "none";
+  document.getElementById("log-body").innerHTML = '<div class="log-empty">Press RUN LIVE to start</div>';
+  document.getElementById("log-count").textContent = "0 events";
+  ["b-tasks","b-tokens","b-saved","b-cost","b-energy","b-handovers"].forEach(id => document.getElementById(id).textContent = "—");
 }
 
-function renderAgents() {
-  const tSent   = agents.reduce((s, a) => s + a.sent, 0);
-  const tNoRest = agents.reduce((s, a) => s + a.sentNoRest, 0);
-  const cost    = (tSent / 1000) * COST_PER_1K;
-  const costNR  = (tNoRest / 1000) * COST_PER_1K;
-  const energy  = (tSent / 1000000) * ENERGY_PER_1M;
-  const energyNR= (tNoRest / 1000000) * ENERGY_PER_1M;
-  const savePct = tNoRest > 0 ? ((1 - tSent / tNoRest) * 100) : 0;
+async function poll() {
+  try {
+    const report = await api({ action: "fleet_report" });
+    if (report.error) { document.getElementById("status-txt").textContent = "Error: " + report.error; return; }
 
-  let html = "";
-  PAIRS.forEach((pair, pi) => {
-    const a = agents.find(x => x.id === pair.a.id);
-    const b = agents.find(x => x.id === pair.b.id);
-    html += `<div class="pair-card">
-      <div class="pair-header"><span>WATCH PAIR ${pi + 1}</span><span>Handovers: ${a.handovers + b.handovers}</span></div>
-      <div class="pair-grid">`;
+    document.getElementById("status-txt").textContent = "Live · " + new Date().toLocaleTimeString();
 
-    [a, b].forEach(ag => {
-      const sc = STATUS_COLORS[ag.status] || STATUS_COLORS.idle;
-      const isRest = ag.status === "resting" || ag.status === "alarm";
-      const prog = isRest ? ag.restTick / REST_TICKS : ag.watchTick / WATCH_TICKS;
-      const pct = (Math.min(prog, 1) * 100).toFixed(0);
-      const barColor = prog > 0.85 && !isRest ? "#f59e0b" : sc.bd;
-      const healthPct = Math.min(ag.health, 100);
-      const healthColor = ag.health >= 80 ? "#22c55e" : ag.health >= 55 ? "#4ade80" : ag.health >= 35 ? "#f59e0b" : "#ef4444";
+    // Banner — use WhiteRoom's own calculations
+    const t = report.totals;
+    const es = report.energySavings;
+    document.getElementById("b-tasks").textContent = t.tasks;
+    document.getElementById("b-tokens").textContent = (t.tokens/1000).toFixed(1) + "K";
+    document.getElementById("b-saved").textContent = (es.estimatedTokensSaved/1000).toFixed(0) + "K";
+    document.getElementById("b-cost").textContent = es.estimatedCostSaved;
+    document.getElementById("b-energy").textContent = es.estimatedEnergySaved;
+    document.getElementById("b-handovers").textContent = t.handovers;
 
-      html += `<div class="agent-card" style="border-left-color:${sc.bd}">
-        <div class="agent-top">
-          <div>
-            <div class="agent-name">${ag.id.toUpperCase()}</div>
-            <div class="agent-meta">${ag.role} | Watch #${ag.watchNum} | ${ag.tasks} tasks</div>
-          </div>
-          <div class="agent-badge" style="background:${sc.bg};color:${sc.tx};border:1px solid ${sc.bd}">${ag.status === "handing_over" ? "HANDOVER" : ag.status.toUpperCase()}</div>
-        </div>
+    // Comparison panel
+    const withRest = t.tokens;
+    const noRest = t.tokens + (es.estimatedTokensSaved || 0);
+    const costWith = (withRest/1000) * COST_PER_1K;
+    const costNo = (noRest/1000) * COST_PER_1K;
+    const energyWith = (withRest/1000000) * ENERGY_PER_1M;
+    const energyNo = (noRest/1000000) * ENERGY_PER_1M;
+    const savePct = noRest > 0 ? ((1 - withRest/noRest)*100).toFixed(1) : "0";
+    document.getElementById("compare").style.display = "block";
+    document.getElementById("c-no-rest").textContent = (noRest/1000).toFixed(1) + "K tokens";
+    document.getElementById("c-no-rest-meta").textContent = `$${costNo.toFixed(4)} | ${energyNo.toFixed(5)} kWh`;
+    document.getElementById("c-rest").textContent = (withRest/1000).toFixed(1) + "K tokens";
+    document.getElementById("c-rest-meta").textContent = `$${costWith.toFixed(4)} | ${energyWith.toFixed(5)} kWh`;
+    document.getElementById("c-desc").textContent = t.handovers > 0
+      ? `${t.handovers} handover(s) completed. ${savePct}% fewer tokens. Context resets kept costs low.`
+      : "Savings accumulate after first handover.";
 
-        <div class="progress-wrap">
-          <div class="progress-labels"><span>${isRest ? "Resting" : "Watch progress"}</span><span>${pct}%</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div>
-        </div>
+    // Audit log — only new events
+    if (report.recentAudit) {
+      [...report.recentAudit].reverse().forEach(evt => {
+        if (logEvents.has(evt.id)) return;
+        logEvents.add(evt.id);
+        const type = evt.type === "task_complete" ? "task"
+          : evt.type.includes("handover") ? "handover"
+          : evt.type.includes("rest") || evt.type === "watch_end" ? "rest"
+          : evt.type === "alarm" || evt.type === "watch_start" ? "alarm" : "info";
+        let msg = evt.type === "task_complete"
+          ? `✓ ${evt.agentId.toUpperCase()}: task done | ${(evt.tokensUsed/1000).toFixed(1)}K tokens | ${evt.remaining}min remaining`
+          : evt.type.includes("handover") ? `🔄 HANDOVER: ${evt.agentId.toUpperCase()} → relief`
+          : evt.type === "watch_start" ? `▶ ${evt.agentId.toUpperCase()} watch started`
+          : evt.type === "register" ? `📋 ${evt.agentId.toUpperCase()} registered (${evt.role})`
+          : `${evt.agentId.toUpperCase()}: ${evt.type}`;
+        logEntries.unshift({ msg, color: LOG_COLORS[type]||LOG_COLORS.info, time: new Date(evt.timestamp).toLocaleTimeString("en-US",{hour12:false}) });
+      });
+      if (logEntries.length > 150) logEntries = logEntries.slice(0, 150);
+      renderLog();
+    }
 
-        <div class="progress-wrap">
-          <div class="progress-labels">
-            <span>Health ${ag.health < 60 ? '⚠' : ''}</span>
-            <span style="color:${healthColor}">${ag.health.toFixed(0)}%</span>
-          </div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${healthPct}%;background:${healthColor}"></div></div>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-box">
-            <div class="stat-label">CTX (W/ REST)</div>
-            <div class="stat-value" style="color:${ag.ctx > 20000 ? '#f59e0b' : '#e2e8f0'}">${(ag.ctx/1000).toFixed(1)}K</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">CTX (NO REST)</div>
-            <div class="stat-value" style="color:#ef4444">${(ag.ctxNoRest/1000).toFixed(1)}K</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">TASKS DONE</div>
-            <div class="stat-value">${ag.tasks}</div>
-          </div>
-        </div>
-      </div>`;
+    // Fetch all agent statuses in parallel
+    const allIds = [...(report.status.working||[]), ...(report.status.resting||[]), ...(report.status.idle||[])];
+    const agentData = await Promise.all(allIds.map(id => api({action:"check_watch",agent_id:id}).then(d=>({id,...d})).catch(()=>null)));
+    
+    // Update health state
+    agentData.filter(Boolean).forEach(d => {
+      if (!agentState[d.id]) agentState[d.id] = { health: 100, restProgress: 0 };
+      const pct = parseFloat(d.percentComplete) || 0;
+      if (d.status === "working") agentState[d.id].health = Math.max(20, 100 - (pct * 0.75));
+      else if (d.status === "resting") {
+        agentState[d.id].health = Math.min(100, (agentState[d.id].health||50) + 6);
+        agentState[d.id].restProgress = Math.min(100, (agentState[d.id].restProgress||0) + 12);
+      } else { agentState[d.id].health = 100; agentState[d.id].restProgress = 0; }
     });
 
-    html += `</div></div>`;
+    renderAgents(agentData.filter(Boolean));
+  } catch(e) {
+    document.getElementById("status-txt").textContent = "Poll error — retrying...";
+    console.error(e);
+  }
+}
+
+function renderAgents(agents) {
+  if (!agents.length) return;
+  let html = "";
+  agents.forEach(d => {
+    const s = agentState[d.id] || {};
+    const status = d.status || "idle";
+    const sc = SC[status] || SC.idle;
+    const pct = parseFloat(d.percentComplete) || 0;
+    const health = s.health || 100;
+    const healthColor = health >= 80 ? "#22c55e" : health >= 55 ? "#4ade80" : health >= 35 ? "#f59e0b" : "#ef4444";
+    const watchBarColor = pct > 85 && status !== "resting" ? "#f59e0b" : sc.bar;
+    const watchDisplay = status === "resting" ? s.restProgress || 0 : pct;
+    const tokens = d.tokensUsed || 0;
+
+    html += `<div class="agent-card" style="border-left-color:${sc.border}">
+      <div class="agent-header">
+        <div>
+          <div class="agent-name">${d.id.toUpperCase()}</div>
+          <div class="agent-role">${d.role || d.id}</div>
+          <div class="agent-meta">Watch #${d.watchNumber||1} · ${d.tasksCompleted||0} tasks · ${d.minutesWorked||0}min worked</div>
+        </div>
+        <span class="badge" style="background:${sc.badgeBg};color:${sc.badgeTx};border:1px solid ${sc.badgeBd}">${status.toUpperCase()}</span>
+      </div>
+      <div class="progress-section">
+        <div class="progress-row"><span>${status==="resting"?"Rest progress":"Watch progress"}</span><span style="color:#94a3b8">${watchDisplay.toFixed(0)}%${status!=="resting"?" · "+(d.minutesRemaining||0)+"min left":""}</span></div>
+        <div class="bar"><div class="bar-fill" style="width:${watchDisplay}%;background:${watchBarColor}"></div></div>
+        <div class="progress-row"><span>Health ${health<50?"⚠":""}</span><span style="color:${healthColor}">${health.toFixed(0)}%</span></div>
+        <div class="bar"><div class="bar-fill" style="width:${health}%;background:${healthColor}"></div></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-label">TOKENS USED</div><div class="stat-val" style="color:${tokens>20000?"#f59e0b":"#e2e8f0"}">${(tokens/1000).toFixed(1)}K</div></div>
+        <div class="stat"><div class="stat-label">WATCH %</div><div class="stat-val" style="color:${pct>80?"#f59e0b":"#e2e8f0"}">${pct.toFixed(0)}%</div></div>
+        <div class="stat"><div class="stat-label">HANDOVERS</div><div class="stat-val" style="color:#818cf8">${Math.max(0,(d.watchNumber||1)-1)}</div></div>
+      </div>
+    </div>`;
   });
-
-  // Comparison panel
-  html += `<div class="compare">
-    <div class="compare-title">CONTINUOUS vs WHITE ROOM — LIVE COMPARISON</div>
-    <div class="compare-grid">
-      <div class="compare-no-rest">
-        <div style="font-size:7px;color:#ef4444;margin-bottom:4px;letter-spacing:1px">WITHOUT WHITE ROOM</div>
-        <div style="font-size:20px;font-weight:700;color:#fca5a5">${(tNoRest/1000).toFixed(1)}K tokens</div>
-        <div style="font-size:8px;color:#ef4444;margin:2px 0">$${costNR.toFixed(4)} | ${energyNR.toFixed(5)} kWh</div>
-        <div style="font-size:7px;color:#7f1d1d;margin-top:4px">Context grows forever. Every call pays compounding cost. Agent health degrades with no recovery.</div>
-      </div>
-      <div class="compare-rest">
-        <div style="font-size:7px;color:#4ade80;margin-bottom:4px;letter-spacing:1px">WITH WHITE ROOM</div>
-        <div style="font-size:20px;font-weight:700;color:#86efac">${(tSent/1000).toFixed(1)}K tokens</div>
-        <div style="font-size:8px;color:#4ade80;margin:2px 0">$${cost.toFixed(4)} | ${energy.toFixed(5)} kWh</div>
-        <div style="font-size:7px;color:#166534;margin-top:4px">Context resets at handover. Relief agent starts fresh. ${savePct > 0 ? savePct.toFixed(1)+'% fewer tokens. Health recovers during rest.' : 'Savings accumulate after first handover.'}</div>
-      </div>
-    </div>
-  </div>`;
-
-  document.getElementById("agents-col").innerHTML = html;
+  document.getElementById("agents-grid").innerHTML = html;
 }
 
 function renderLog() {
-  const el = document.getElementById("log-container");
-  if (!logEntries.length) { el.innerHTML = '<div class="log-empty">Press RUN to start</div>'; return; }
-  el.innerHTML = logEntries.map(e =>
-    `<div class="log-entry" style="border-left-color:${LOG_COLORS[e.type]||LOG_COLORS.info}"><span>${e.time} ${e.msg}</span></div>`
-  ).join("");
+  const el = document.getElementById("log-body");
+  if (!logEntries.length) { el.innerHTML = '<div class="log-empty">No events yet</div>'; return; }
+  el.innerHTML = logEntries.map(e => `<div class="log-entry" style="border-left-color:${e.color}"><div class="log-time">${e.time}</div><div class="log-msg">${e.msg}</div></div>`).join("");
+  document.getElementById("log-count").textContent = logEntries.length + " events";
 }
-
-function renderAll() { renderBanner(); renderAgents(); }
-
-// ─── Mode switching ──────────────────────────────────────────
-function switchMode(m) {
-  resetAll();
-  mode = m;
-  document.getElementById("btn-sim").className  = "mode-btn" + (m === "sim"  ? " active" : "");
-  document.getElementById("btn-live").className = "mode-btn" + (m === "live" ? " active" : "");
-  document.getElementById("sim-controls").style.display  = m === "sim"  ? "inline" : "none";
-  document.getElementById("live-controls").style.display = m === "live" ? "inline" : "none";
-  document.getElementById("speed-sel").style.display     = m === "sim"  ? "inline" : "none";
-  document.getElementById("footer-left").textContent = "White Room v0.4 | " + (m === "live" ? "Live Monitor: " + WHITEROOM_URL : "Simulation Mode");
-}
-
-function resetAll() {
-  running = false;
-  if (simInterval)  clearInterval(simInterval);
-  if (liveInterval) clearInterval(liveInterval);
-  simInterval = liveInterval = null;
-  tk = 0; selected = null; logEntries = [];
-  initAgents();
-  document.getElementById("dot").className = "dot";
-  document.getElementById("btn-run").textContent = "RUN";
-  document.getElementById("btn-run").className = "btn-run";
-  document.getElementById("btn-live-run").textContent = "RUN LIVE";
-  document.getElementById("btn-live-run").className = "btn-run";
-  document.getElementById("btn-live-run").disabled = false;
-  document.getElementById("status-txt").textContent = "Ready";
-  document.getElementById("fleet-bar").style.display = "none";
-  renderAll(); renderLog();
-}
-
-// ─── Simulation ──────────────────────────────────────────────
-function toggleSim() {
-  if (running) {
-    running = false;
-    clearInterval(simInterval);
-    document.getElementById("dot").className = "dot";
-    document.getElementById("btn-run").textContent = "RUN";
-    document.getElementById("btn-run").className = "btn-run";
-  } else {
-    running = true;
-    document.getElementById("dot").className = "dot on";
-    document.getElementById("btn-run").textContent = "STOP";
-    document.getElementById("btn-run").className = "btn-run stop";
-    simInterval = setInterval(simTick, 1200 / spd);
-  }
-}
-
-function simTick() {
-  tk++;
-  document.getElementById("status-txt").textContent = "Sim: " + ((tk * 30) / 60).toFixed(1) + "h elapsed";
-
-  agents.forEach(ag => {
-    if (ag.status === "resting") {
-      ag.restTick++;
-      // Health recovers during rest
-      ag.health = Math.min(ag.baseline, ag.health + (ag.baseline - ag.health) * 0.12);
-      ag.healthHist.push(ag.health);
-      if (ag.restTick >= REST_TICKS) {
-        ag.baseline = Math.min(130, ag.baseline + 2);
-        ag.health = ag.baseline;
-        ag.status = "alarm";
-        ag.alarms++;
-        addLog(`ALARM ✓ ${ag.id.toUpperCase()} rested — health restored to ${ag.health.toFixed(0)}%`, "alarm");
-      }
-      return;
-    }
-    if (ag.status === "alarm" || ag.status === "handing_over") return;
-
-    if (ag.status === "working" || ag.status === "overtime") {
-      const task = TASKS[Math.floor(Math.random() * TASKS.length)];
-      ag.tasks++;
-      ag.minutesWorked += task.minutes;
-      ag.watchTick++;
-
-      // WITH WhiteRoom: context is what's in THIS agent's window
-      ag.ctx += task.tokens;
-
-      // WITHOUT WhiteRoom: context grows forever (no one ever rests or resets)
-      ag.ctxNoRest += task.tokens;
-
-      // Token cost: WITH rest = ctx (current window), WITHOUT = ctxNoRest (ever-growing)
-      ag.sent += ag.ctx;
-      ag.sentNoRest += ag.ctxNoRest;
-
-      // Health decay — harder tasks = more fatigue
-      const fatigue = (task.tokens / 1000) * 1.2 + (ag.status === "overtime" ? 3 : 0);
-      ag.health = Math.max(15, ag.health - fatigue);
-      ag.healthHist.push(ag.health);
-
-      ag.ctxHist.push({ tokens: ag.ctx });
-
-      if (ag.watchTick >= WATCH_TICKS && ag.status !== "overtime") {
-        ag.status = "overtime";
-        addLog(`⚠ OVERTIME: ${ag.id.toUpperCase()} exceeded 6h watch — health declining fast`, "overtime");
-      }
-
-      // Try handover
-      if (ag.watchTick >= WATCH_TICKS) {
-        const pid = partner(ag.id);
-        const pr = agents.find(x => x.id === pid);
-        if (pr && (pr.status === "alarm" || (pr.status === "resting" && pr.restTick >= REST_TICKS - 2))) {
-          const beforeCtx = ag.ctx;
-          const beforeCtxNR = ag.ctxNoRest;
-          ag.status = "handing_over";
-          ag.handovers++;
-
-          // Relief agent inherits ctxNoRest (continuous baseline) but starts fresh ctx
-          pr.status = "working";
-          pr.watchTick = 0;
-          pr.watchNum++;
-          pr.ctx = Math.min(1500, Math.floor(beforeCtx * 0.04)); // ~4% context summary handed over
-          pr.ctxNoRest = beforeCtxNR + pr.ctx; // no-rest world: just keeps growing
-          pr.handovers++;
-          pr.ctxHist.push({ tokens: pr.ctx });
-
-          addLog(`🔄 HANDOVER: ${ag.id.toUpperCase()} → ${pr.id.toUpperCase()} | ctx: ${(beforeCtx/1000).toFixed(1)}K → ${(pr.ctx/1000).toFixed(1)}K (${((1-pr.ctx/beforeCtx)*100).toFixed(0)}% cut)`, "handover");
-
-          setTimeout(() => {
-            ag.status = "resting";
-            ag.restTick = 0;
-            ag.ctx = 0;
-            ag.ctxHist.push({ tokens: 0 });
-            addLog(`💤 REST: ${ag.id.toUpperCase()} → White Room. Health: ${ag.health.toFixed(0)}% → recovering...`, "rest");
-            renderAll();
-          }, 200);
-        }
-      }
-    }
-  });
-  renderAll();
-}
-
-// ─── Live Monitor ────────────────────────────────────────────
-async function toggleLive() {
-  if (running) {
-    running = false;
-    clearInterval(liveInterval);
-    document.getElementById("dot").className = "dot";
-    document.getElementById("btn-live-run").textContent = "RUN LIVE";
-    document.getElementById("btn-live-run").className = "btn-run";
-    document.getElementById("status-txt").textContent = "Stopped";
-    return;
-  }
-
-  running = true;
-  document.getElementById("btn-live-run").textContent = "STOP";
-  document.getElementById("btn-live-run").className = "btn-run stop";
-  document.getElementById("dot").className = "dot on";
-  document.getElementById("status-txt").textContent = "Polling WhiteRoom...";
-
-  // init display agents
-  agents = [];
-  PAIRS.forEach(p => {
-    agents.push(mkAgent(p.a, false));
-    agents.push(mkAgent(p.b, false));
-  });
-
-  await pollLive();
-  liveInterval = setInterval(pollLive, 15000); // poll every 15s
-}
-
-async function pollLive() {
-  let anyData = false;
-
-  // Auto-discover agents from all known fleets
-  for (const fleetId of KNOWN_FLEETS) {
-    try {
-      const res = await fetch(`${WHITEROOM_URL}/api/white-room`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "fleet_report", fleet_id: fleetId })
-      });
-      const report = await res.json();
-      if (report.error || !report.agentCount) continue;
-
-      anyData = true;
-
-      // Get all agent IDs from the fleet report
-      const allAgentIds = [
-        ...(report.status.working || []),
-        ...(report.status.resting || []),
-        ...(report.status.idle || [])
-      ];
-
-      // Update fleet bar
-      document.getElementById("fleet-bar").style.display = "grid";
-      document.getElementById("fleet-bar").innerHTML = [
-        { l: "FLEET", v: fleetId, c: "#38bdf8" },
-        { l: "AGENTS", v: report.agentCount, c: "#f8fafc" },
-        { l: "TASKS", v: report.totals.tasks, c: "#4ade80" },
-        { l: "TOKENS", v: (report.totals.tokens/1000).toFixed(1)+"K", c: "#f8fafc" },
-      ].map(s => `<div class="fleet-card"><div class="fleet-label">${s.l}</div><div class="fleet-value" style="color:${s.c}">${s.v}</div></div>`).join("");
-
-      // Add audit log entries from fleet report
-      if (report.recentAudit) {
-        report.recentAudit.slice(0, 5).forEach(evt => {
-          const exists = logEntries.find(l => l.msg.includes(evt.id));
-          if (!exists) {
-            const type = evt.type === "task_complete" ? "task" : evt.type === "handover" ? "handover" : evt.type === "watch_start" ? "info" : "rest";
-            const msg = evt.type === "task_complete"
-              ? `✓ ${evt.agentId.toUpperCase()}: task complete | ${(evt.tokensUsed/1000).toFixed(1)}K tokens | ${evt.remaining}min remaining [${evt.id}]`
-              : evt.type === "handover"
-              ? `🔄 HANDOVER: ${evt.agentId.toUpperCase()} [${evt.id}]`
-              : `${evt.agentId.toUpperCase()}: ${evt.type} [${evt.id}]`;
-            logEntries.unshift({ msg, type, time: new Date(evt.timestamp).toLocaleTimeString("en-US", { hour12: false }) });
-          }
-        });
-        if (logEntries.length > 100) logEntries = logEntries.slice(0, 100);
-        renderLog();
-      }
-
-      // Now get individual agent details
-      for (const id of allAgentIds) {
-        try {
-          const agRes = await fetch(`${WHITEROOM_URL}/api/white-room`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "check_watch", fleet_id: fleetId, agent_id: id })
-          });
-          const data = await agRes.json();
-          if (data.error) continue;
-
-          let ag = agents.find(a => a.id === id);
-          if (!ag) {
-            ag = mkAgent({ id, role: data.role || id.charAt(0).toUpperCase() + id.slice(1), color: "#22c55e" }, false);
-            agents.push(ag);
-          }
-
-          const prevTasks = ag.tasks;
-          ag.status = data.status === "resting" ? "resting" : data.needsHandover ? "overtime" : "working";
-          ag.watchNum = data.watchNumber || 1;
-          ag.tasks = data.tasksCompleted || 0;
-          ag.minutesWorked = data.minutesWorked || 0;
-
-          const realTokens = data.tokensUsed || 0;
-          ag.sentNoRest = realTokens;
-          const handoverCount = ag.handovers || 0;
-          ag.sent = Math.floor(realTokens * (handoverCount > 0 ? 0.4 : 1));
-          ag.ctx = realTokens;
-          ag.ctxNoRest = realTokens;
-
-          const pctDone = parseFloat(data.percentComplete) || 0;
-          ag.watchTick = Math.floor((pctDone / 100) * WATCH_TICKS);
-
-          if (ag.status === "working") {
-            ag.health = Math.max(20, 100 - (pctDone * 0.7));
-          } else if (ag.status === "resting") {
-            ag.health = Math.min(100, ag.health + 10);
-            ag.restTick = Math.min(REST_TICKS, ag.restTick + 10);
-          }
-
-        } catch(e) { /* silent fail per agent */ }
-      }
-
-    } catch(e) {
-      // Fleet not found or offline — skip silently
-    }
-  }
-
-  if (anyData) {
-    document.getElementById("status-txt").textContent = "Live — updated " + new Date().toLocaleTimeString();
-    renderAll();
-  }
-}
-
-// ─── Init ────────────────────────────────────────────────────
-initAgents();
-renderAll();
-renderLog();
 </script>
 </body>
 </html>
