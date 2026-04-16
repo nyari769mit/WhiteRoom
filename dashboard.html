@@ -151,7 +151,14 @@ let logEvents = new Set();
 let logEntries = [];
 let agentState = {};
 
-const SC = {
+const ROLE_MAP = {
+  alpha: "Lead Planner", bravo: "Planner (Relief)",
+  charlie: "Coordinator", delta: "Coord. (Relief)",
+  echo: "Vendor Manager", foxtrot: "Vendor (Relief)",
+  unknown: "CrewAI Agent"
+};
+
+function getRole(id) { return ROLE_MAP[id] || id.charAt(0).toUpperCase() + id.slice(1); }
   working:  { border: "#22c55e", badgeBg: "#052e16", badgeTx: "#4ade80", badgeBd: "#22c55e", bar: "#22c55e" },
   overtime: { border: "#f59e0b", badgeBg: "#451a03", badgeTx: "#fbbf24", badgeBd: "#f59e0b", bar: "#f59e0b" },
   resting:  { border: "#0ea5e9", badgeBg: "#0c4a6e", badgeTx: "#38bdf8", badgeBd: "#0ea5e9", bar: "#0ea5e9" },
@@ -263,7 +270,7 @@ async function poll() {
     // Update health state
     agentData.filter(Boolean).forEach(d => {
       if (!agentState[d.id]) agentState[d.id] = { health: 100, restProgress: 0 };
-      const pct = parseFloat(d.percentComplete) || 0;
+      const pct = parseFloat((d.percentComplete||"0").toString().replace("%","")) || 0;
       if (d.status === "working") agentState[d.id].health = Math.max(20, 100 - (pct * 0.75));
       else if (d.status === "resting") {
         agentState[d.id].health = Math.min(100, (agentState[d.id].health||50) + 6);
@@ -285,7 +292,7 @@ function renderAgents(agents) {
     const s = agentState[d.id] || {};
     const status = d.status || "idle";
     const sc = SC[status] || SC.idle;
-    const pct = parseFloat(d.percentComplete) || 0;
+    const pct = parseFloat((d.percentComplete||"0").toString().replace("%","")) || 0;
     const health = s.health || 100;
     const healthColor = health >= 80 ? "#22c55e" : health >= 55 ? "#4ade80" : health >= 35 ? "#f59e0b" : "#ef4444";
     const watchBarColor = pct > 85 && status !== "resting" ? "#f59e0b" : sc.bar;
@@ -296,7 +303,7 @@ function renderAgents(agents) {
       <div class="agent-header">
         <div>
           <div class="agent-name">${d.id.toUpperCase()}</div>
-          <div class="agent-role">${d.role || d.id}</div>
+          <div class="agent-role">${d.role || getRole(d.id)}</div>
           <div class="agent-meta">Watch #${d.watchNumber||1} · ${d.tasksCompleted||0} tasks · ${d.minutesWorked||0}min worked</div>
         </div>
         <span class="badge" style="background:${sc.badgeBg};color:${sc.badgeTx};border:1px solid ${sc.badgeBd}">${status.toUpperCase()}</span>
