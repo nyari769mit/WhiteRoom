@@ -180,6 +180,23 @@ app.post("/v1/messages", async (req, res) => {
   anthropicReq.end();
 });
 
+
+// Auto-Alarm: fires when rest periods end
+setInterval(() => {
+  const now = Date.now();
+  for (const [fleetId, fleet] of whiteRoom.fleets) {
+    for (const [agentId, agent] of Object.entries(fleet.agents)) {
+      if (agent.status === 'resting' && agent.alarmAt) {
+        const alarmTime = new Date(agent.alarmAt).getTime();
+        if (now >= alarmTime) {
+          whiteRoom.fireAlarm(fleetId, agentId);
+          console.log('Auto-alarm fired: ' + agentId + ' in ' + fleetId);
+        }
+      }
+    }
+  }
+}, 30000);
+
 app.listen(PORT, () => {
   console.log(`White Room running on port ${PORT}`);
 });
