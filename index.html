@@ -159,6 +159,8 @@ const ROLE_MAP = {
 };
 
 function getRole(id) { return ROLE_MAP[id] || id.charAt(0).toUpperCase() + id.slice(1); }
+
+const SC = {
   working:  { border: "#22c55e", badgeBg: "#052e16", badgeTx: "#4ade80", badgeBd: "#22c55e", bar: "#22c55e" },
   overtime: { border: "#f59e0b", badgeBg: "#451a03", badgeTx: "#fbbf24", badgeBd: "#f59e0b", bar: "#f59e0b" },
   resting:  { border: "#0ea5e9", badgeBg: "#0c4a6e", badgeTx: "#38bdf8", badgeBd: "#0ea5e9", bar: "#0ea5e9" },
