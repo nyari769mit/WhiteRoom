@@ -129,9 +129,10 @@ select { font-family: inherit; }
 <script>
 // ─── Config ─────────────────────────────────────────────────
 const WHITEROOM_URL = "https://whiteroom-m4j4.onrender.com";
-const AGENTS_URL = "https://event-planning-relief.onrender.com";
-const FLEET_ID = "event-planning-fleet";
 const WATCH_TICKS = 72, REST_TICKS = 72;
+
+// Auto-discovered fleets and agents — no hardcoding needed
+const KNOWN_FLEETS = ["event-planning-fleet", "default", "crewai-fleet"];
 const COST_PER_1K = 0.003, ENERGY_PER_1M = 0.4;
 
 const PAIRS = [
@@ -499,65 +500,100 @@ async function toggleLive() {
 }
 
 async function pollLive() {
-  const agentIds = ["bravo", "delta", "foxtrot"];
   let anyData = false;
 
-  for (const id of agentIds) {
+  // Auto-discover agents from all known fleets
+  for (const fleetId of KNOWN_FLEETS) {
     try {
       const res = await fetch(`${WHITEROOM_URL}/api/white-room`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "check_watch", fleet_id: FLEET_ID, agent_id: id })
+        body: JSON.stringify({ action: "fleet_report", fleet_id: fleetId })
       });
-      const data = await res.json();
-      if (data.error) continue;
+      const report = await res.json();
+      if (report.error || !report.agentCount) continue;
 
       anyData = true;
 
-      // Find or create agent in display
-      let ag = agents.find(a => a.id === id);
-      if (!ag) {
-        ag = mkAgent({ id, role: id.charAt(0).toUpperCase() + id.slice(1), color: "#22c55e" }, false);
-        agents.push(ag);
+      // Get all agent IDs from the fleet report
+      const allAgentIds = [
+        ...(report.status.working || []),
+        ...(report.status.resting || []),
+        ...(report.status.idle || [])
+      ];
+
+      // Update fleet bar
+      document.getElementById("fleet-bar").style.display = "grid";
+      document.getElementById("fleet-bar").innerHTML = [
+        { l: "FLEET", v: fleetId, c: "#38bdf8" },
+        { l: "AGENTS", v: report.agentCount, c: "#f8fafc" },
+        { l: "TASKS", v: report.totals.tasks, c: "#4ade80" },
+        { l: "TOKENS", v: (report.totals.tokens/1000).toFixed(1)+"K", c: "#f8fafc" },
+      ].map(s => `<div class="fleet-card"><div class="fleet-label">${s.l}</div><div class="fleet-value" style="color:${s.c}">${s.v}</div></div>`).join("");
+
+      // Add audit log entries from fleet report
+      if (report.recentAudit) {
+        report.recentAudit.slice(0, 5).forEach(evt => {
+          const exists = logEntries.find(l => l.msg.includes(evt.id));
+          if (!exists) {
+            const type = evt.type === "task_complete" ? "task" : evt.type === "handover" ? "handover" : evt.type === "watch_start" ? "info" : "rest";
+            const msg = evt.type === "task_complete"
+              ? `✓ ${evt.agentId.toUpperCase()}: task complete | ${(evt.tokensUsed/1000).toFixed(1)}K tokens | ${evt.remaining}min remaining [${evt.id}]`
+              : evt.type === "handover"
+              ? `🔄 HANDOVER: ${evt.agentId.toUpperCase()} [${evt.id}]`
+              : `${evt.agentId.toUpperCase()}: ${evt.type} [${evt.id}]`;
+            logEntries.unshift({ msg, type, time: new Date(evt.timestamp).toLocaleTimeString("en-US", { hour12: false }) });
+          }
+        });
+        if (logEntries.length > 100) logEntries = logEntries.slice(0, 100);
+        renderLog();
       }
 
-      // Map real WhiteRoom data to display state
-      const prevTasks = ag.tasks;
-      ag.status = data.status === "resting" ? "resting" : data.needsHandover ? "overtime" : "working";
-      ag.watchNum = data.watchNumber || 1;
-      ag.tasks = data.tasksCompleted || 0;
-      ag.minutesWorked = data.minutesWorked || 0;
+      // Now get individual agent details
+      for (const id of allAgentIds) {
+        try {
+          const agRes = await fetch(`${WHITEROOM_URL}/api/white-room`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "check_watch", fleet_id: fleetId, agent_id: id })
+          });
+          const data = await agRes.json();
+          if (data.error) continue;
 
-      // Tokens: real tokens used = sentNoRest baseline
-      const realTokens = data.tokensUsed || 0;
-      ag.sentNoRest = realTokens; // no-rest world: same tokens, growing context
+          let ag = agents.find(a => a.id === id);
+          if (!ag) {
+            ag = mkAgent({ id, role: data.role || id.charAt(0).toUpperCase() + id.slice(1), color: "#22c55e" }, false);
+            agents.push(ag);
+          }
 
-      // With WhiteRoom: estimate context savings based on handovers
-      // Each handover resets context to ~4%, so savings compound
-      const handoverCount = ag.handovers || 0;
-      const contextReductionFactor = Math.pow(0.5, handoverCount); // each handover ~halves avg context
-      ag.sent = Math.floor(realTokens * (handoverCount > 0 ? contextReductionFactor + 0.4 : 1));
-      ag.ctx = realTokens;
-      ag.ctxNoRest = realTokens;
+          const prevTasks = ag.tasks;
+          ag.status = data.status === "resting" ? "resting" : data.needsHandover ? "overtime" : "working";
+          ag.watchNum = data.watchNumber || 1;
+          ag.tasks = data.tasksCompleted || 0;
+          ag.minutesWorked = data.minutesWorked || 0;
 
-      // Watch progress
-      const pctDone = parseFloat(data.percentComplete) || 0;
-      ag.watchTick = Math.floor((pctDone / 100) * WATCH_TICKS);
+          const realTokens = data.tokensUsed || 0;
+          ag.sentNoRest = realTokens;
+          const handoverCount = ag.handovers || 0;
+          ag.sent = Math.floor(realTokens * (handoverCount > 0 ? 0.4 : 1));
+          ag.ctx = realTokens;
+          ag.ctxNoRest = realTokens;
 
-      // Health: decays with work, recovers at rest
-      if (ag.status === "working") {
-        ag.health = Math.max(20, 100 - (pctDone * 0.7));
-      } else if (ag.status === "resting") {
-        ag.health = Math.min(100, ag.health + 10);
-        ag.restTick = Math.min(REST_TICKS, ag.restTick + 10);
-      }
+          const pctDone = parseFloat(data.percentComplete) || 0;
+          ag.watchTick = Math.floor((pctDone / 100) * WATCH_TICKS);
 
-      if (ag.tasks > prevTasks) {
-        addLog(`✓ ${id.toUpperCase()}: task complete | ${data.minutesWorked}min worked | ${(realTokens/1000).toFixed(1)}K tokens | ${data.percentComplete} watch`, "task");
+          if (ag.status === "working") {
+            ag.health = Math.max(20, 100 - (pctDone * 0.7));
+          } else if (ag.status === "resting") {
+            ag.health = Math.min(100, ag.health + 10);
+            ag.restTick = Math.min(REST_TICKS, ag.restTick + 10);
+          }
+
+        } catch(e) { /* silent fail per agent */ }
       }
 
     } catch(e) {
-      addLog(`⚠ Cannot reach ${id}: ${e.message}`, "error");
+      // Fleet not found or offline — skip silently
     }
   }
 
