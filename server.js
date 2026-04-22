@@ -85,7 +85,13 @@ app.post("/api/white-room", (req, res) => {
         return res.json(result);
       }
 
-      case "fleet_report": {
+      
+      case "list_fleets": {
+        const result = whiteRoom.listFleets();
+        return res.json({ fleets: result });
+      }
+
+case "fleet_report": {
         const result = whiteRoom.getFleetReport(fleetId);
         return res.json(result);
       }

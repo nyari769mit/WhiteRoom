@@ -37,6 +37,19 @@ class WhiteRoom {
   }
 
   // ─── Register an agent ────────────────────────────────────
+
+  listFleets() {
+    const result = [];
+    for (const [fleetId, fleet] of this.fleets) {
+      result.push({
+        fleetId,
+        agentCount: Object.keys(fleet.agents).length,
+        agents: Object.keys(fleet.agents)
+      });
+    }
+    return result;
+  }
+
   registerAgent(fleetId, agentId, role = "worker", watchMinutes = 10, restMinutes = 10, handoverMinutes = 5) {
     const fleet = this._getOrCreateFleet(fleetId);
     if (fleet.agents[agentId]) {

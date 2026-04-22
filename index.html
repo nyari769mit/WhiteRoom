@@ -82,9 +82,7 @@ button { font-family: inherit; cursor: pointer; }
   </div>
   <div class="header-right">
     <select class="fleet-sel" id="fleet-sel">
-      <option value="event-planning-fleet">event-planning-fleet</option>
-      <option value="default">default (CrewAI)</option>
-      <option value="crewai-fleet">crewai-fleet</option>
+      <option value="">Loading fleets...</option>
     </select>
     <span class="status-txt" id="status-txt">Stopped</span>
     <button class="btn btn-green" id="btn-run" onclick="toggle()">RUN LIVE</button>
@@ -178,6 +176,31 @@ async function api(body) {
   });
   return r.json();
 }
+
+// Auto-discover fleets on page load
+async function loadFleets() {
+  try {
+    const res = await fetch(`${WHITEROOM}/api/white-room`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "list_fleets" })
+    });
+    const data = await res.json();
+    const sel = document.getElementById("fleet-sel");
+    if (data.fleets && data.fleets.length > 0) {
+      sel.innerHTML = data.fleets.map(f =>
+        `<option value="${f.fleetId}">${f.fleetId} (${f.agentCount} agents)</option>`
+      ).join("");
+    } else {
+      sel.innerHTML = '<option value="default">default</option>';
+    }
+  } catch(e) {
+    document.getElementById("fleet-sel").innerHTML = '<option value="default">default</option>';
+  }
+}
+
+// Refresh fleets every 30 seconds to pick up new agents
+loadFleets();
+setInterval(loadFleets, 30000);
 
 function toggle() { running ? stopPolling() : startPolling(); }
 
