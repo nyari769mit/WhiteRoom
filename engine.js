@@ -38,6 +38,26 @@ class WhiteRoom {
 
   // ─── Register an agent ────────────────────────────────────
 
+
+  // ─── Handover Storage ───────────────────────────────────
+  storeHandoverDoc(fleetId, agentId, doc) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    if (!fleet.handoverDocs) fleet.handoverDocs = {};
+    fleet.handoverDocs[agentId] = doc;
+  }
+
+  getHandoverDoc(fleetId, agentId) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    return fleet.handoverDocs && fleet.handoverDocs[agentId] ? fleet.handoverDocs[agentId] : null;
+  }
+
+  getTaskHistory(fleetId, agentId) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    if (!fleet.agents[agentId]) return [];
+    const agent = fleet.agents[agentId];
+    return (agent.currentWatch && agent.currentWatch.tasks) ? agent.currentWatch.tasks : [];
+  }
+
   listFleets() {
     const result = [];
     for (const [fleetId, fleet] of this.fleets) {

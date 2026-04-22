@@ -86,6 +86,34 @@ app.post("/api/white-room", (req, res) => {
       }
 
       
+
+      case "generate_handover": {
+        if (!agent_id) return res.status(400).json({ error: "agent_id is required." });
+        const taskHistory = whiteRoom.getTaskHistory(fleetId, agent_id);
+        const existingDoc = whiteRoom.getHandoverDoc(fleetId, agent_id);
+        return res.json({ 
+          taskHistory, 
+          existingDoc,
+          agentId: agent_id,
+          fleetId,
+          message: "Use this history to generate a compression prompt"
+        });
+      }
+
+      case "store_handover": {
+        if (!agent_id) return res.status(400).json({ error: "agent_id is required." });
+        const { handover_doc } = req.body;
+        if (!handover_doc) return res.status(400).json({ error: "handover_doc is required." });
+        whiteRoom.storeHandoverDoc(fleetId, agent_id, handover_doc);
+        return res.json({ success: true, message: `Handover document stored for ${agent_id}` });
+      }
+
+      case "get_handover": {
+        if (!agent_id) return res.status(400).json({ error: "agent_id is required." });
+        const doc = whiteRoom.getHandoverDoc(fleetId, agent_id);
+        return res.json({ agentId: agent_id, fleetId, handoverDoc: doc });
+      }
+
       case "list_fleets": {
         const result = whiteRoom.listFleets();
         return res.json({ fleets: result });
@@ -127,6 +155,15 @@ app.post("/v1/messages", async (req, res) => {
   if (watchStatus.error && watchStatus.error.includes("not found")) {
     whiteRoom.registerAgent(fleetId, agentId, "worker");
     whiteRoom.startWatch(fleetId, agentId);
+  } else if (watchStatus.status === "alarm") {
+    // Agent rested — fire alarm and inject handover doc into next request
+    whiteRoom.fireAlarm(fleetId, agentId);
+    const handoverDoc = whiteRoom.getHandoverDoc(fleetId, agentId);
+    if (handoverDoc && req.body.messages) {
+      const handoverContext = `[HANDOVER CONTEXT - Previous session summary]\n${JSON.stringify(handoverDoc, null, 2)}\n[END HANDOVER CONTEXT]\n\nContinue from where the previous session left off.`;
+      req.body.messages = [{ role: "user", content: handoverContext }, ...req.body.messages];
+      whiteRoom.storeHandoverDoc(fleetId, agentId, null); // clear after injection
+    }
   } else if (watchStatus.status === "resting") {
     return res.status(429).json({
       error: "Agent is resting in the White Room",
@@ -135,9 +172,77 @@ app.post("/v1/messages", async (req, res) => {
       message: "This agent is in mandatory rest period. Call /api/white-room with action=fire_alarm to wake it."
     });
   } else if (watchStatus.needsHandover) {
+    // Auto-generate compression handover before blocking
+    const taskHistory = whiteRoom.getTaskHistory(fleetId, agentId);
+    const existingDoc = whiteRoom.getHandoverDoc(fleetId, agentId);
+    
+    if (taskHistory.length > 0 && !existingDoc) {
+      // Build compression prompt
+      const compressionPrompt = `You are summarizing an AI agent's work session for handover.
+From the following task history, extract ONLY what the next session needs to continue effectively.
+
+Output valid JSON only, no other text:
+{
+  "decisions": [{"what": "...", "why": "...", "final": true}],
+  "state": "current state of work in one paragraph",
+  "pending": [{"task": "...", "priority": "HIGH|NORMAL|LOW"}],
+  "warnings": ["critical things not to miss"]
+}
+
+Task history:
+${JSON.stringify(taskHistory.slice(-20), null, 2)}`;
+
+      // Call LLM to compress
+      const compressionBody = JSON.stringify({
+        model: req.body.model || "claude-haiku-4-5-20251001",
+        max_tokens: 500,
+        messages: [{ role: "user", content: compressionPrompt }]
+      });
+
+      const https = require("https");
+      const compressionReq = https.request({
+        hostname: "api.anthropic.com",
+        port: 443,
+        path: "/v1/messages",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": req.headers["anthropic-version"] || "2023-06-01"
+        }
+      }, (compressionRes) => {
+        let compressionData = "";
+        compressionRes.on("data", chunk => compressionData += chunk);
+        compressionRes.on("end", () => {
+          try {
+            const parsed = JSON.parse(compressionData);
+            const text = parsed.content && parsed.content[0] && parsed.content[0].text;
+            if (text) {
+              const clean = text.replace(/```json|```/g, "").trim();
+              const handoverDoc = JSON.parse(clean);
+              handoverDoc.generated_at = new Date().toISOString();
+              handoverDoc.watch_summary = {
+                tasks_completed: taskHistory.length,
+                tokens_used: taskHistory.reduce((s, t) => s + (t.tokensUsed || 0), 0),
+                duration_minutes: watchStatus.minutesWorked || 0
+              };
+              whiteRoom.storeHandoverDoc(fleetId, agentId, handoverDoc);
+              console.log(`Auto-handover generated for ${agentId}: ${JSON.stringify(handoverDoc).length} chars`);
+            }
+          } catch(e) {
+            console.error("Compression failed:", e.message);
+          }
+        });
+      });
+      compressionReq.write(compressionBody);
+      compressionReq.end();
+    }
+
     return res.status(429).json({
       error: "Agent has exceeded watch limit",
-      message: "This agent needs a handover before continuing. Call /api/white-room with action=initiate_handover."
+      message: "This agent needs a handover before continuing. Call /api/white-room with action=initiate_handover.",
+      handoverGenerated: taskHistory.length > 0,
+      retrieveWith: { action: "get_handover", fleet_id: fleetId, agent_id: agentId }
     });
   }
 
