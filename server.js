@@ -18,13 +18,13 @@ app.get("/dashboard", (req, res) => {
 });
 // ─── Health Check ───────────────────────────────────────────
 app.get("/health", (req, res) => {
-  res.json({ status: "ok", app: "white-room", version: "1.0.0" });
+  res.json({ status: "ok", app: "white-room", version: "1.1.0" });
 });
 
 app.get("/", (req, res) => {
   res.json({
     app: "White Room",
-    version: "1.0.0",
+    version: "1.1.0",
     description: "Work/Rest Governance Layer for AI Agents. Maritime-inspired labor scheduling: 6h watch / 5min handover / 6h rest.",
     author: "Nyari Nain — MIT Sloan",
     endpoints: ["/health", "/api/white-room"],
