@@ -57,6 +57,16 @@ app.post("/api/white-room", (req, res) => {
     }
 
     switch (action) {
+
+      case "token_login": {
+        const { fleet_token } = req.body;
+        if (!fleet_token) return res.status(400).json({ error: "fleet_token is required." });
+        const resolvedFleetId = whiteRoom.getFleetByToken(fleet_token);
+        if (!resolvedFleetId) return res.status(401).json({ error: "Invalid fleet token." });
+        const report = whiteRoom.getFleetReport(resolvedFleetId);
+        return res.json({ success: true, fleetId: resolvedFleetId, report });
+      }
+
       case "register_agent": {
         if (!agent_id) return res.status(400).json({ error: "agent_id is required." });
         const regKey = req.headers["x-api-key"] || (req.headers["authorization"] || "").replace("Bearer ", "");
@@ -64,7 +74,8 @@ app.post("/api/white-room", (req, res) => {
         const { llm_endpoint } = req.body;
         if (llm_endpoint) whiteRoom.setFleetEndpoint(fleetId, llm_endpoint);
         const result = whiteRoom.registerAgent(fleetId, agent_id, agent_role || "worker");
-        return res.json(result);
+        const fleetToken = whiteRoom.getFleetToken(fleetId);
+        return res.json({ ...result, fleetToken, message: "Save your fleet token — use it to log into the WhiteRoom dashboard." });
       }
 
       case "pair_agents": {

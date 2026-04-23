@@ -15,11 +15,14 @@ class WhiteRoom {
 
   _getOrCreateFleet(fleetId) {
     if (!this.fleets.has(fleetId)) {
+      const crypto = require("crypto");
+      const fleetToken = "wr_" + crypto.randomUUID();
       this.fleets.set(fleetId, {
         agents: {},
         pairs: {},
         audit: [],
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        fleetToken
       });
     }
     return this.fleets.get(fleetId);
@@ -380,6 +383,19 @@ class WhiteRoom {
       recentAudit: fleet.audit.slice(-10)
     };
   }
+
+  getFleetToken(fleetId) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    return fleet.fleetToken || null;
+  }
+
+  getFleetByToken(token) {
+    for (const [fleetId, fleet] of this.fleets) {
+      if (fleet.fleetToken === token) return fleetId;
+    }
+    return null;
+  }
+
   setFleetKey(fleetId, apiKey) {
     const fleet = this._getOrCreateFleet(fleetId);
     if (!fleet.apiKeyHash) {
