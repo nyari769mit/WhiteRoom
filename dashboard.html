@@ -8,8 +8,38 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: #050810; color: #e2e8f0; font-family: 'SF Mono','JetBrains Mono','Fira Code',monospace; font-size: 12px; overflow-x: hidden; }
 button { font-family: inherit; cursor: pointer; }
+input { font-family: inherit; }
 
-.header { background: #0a0f1a; border-bottom: 1px solid #1e293b; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+/* ── Login Screen ─────────────────────────────────────────── */
+.login-screen {
+  position: fixed; inset: 0; background: #050810;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+}
+.login-card {
+  background: #0a0f1a; border: 1px solid #1e293b; border-radius: 12px;
+  padding: 40px; width: 420px; text-align: center;
+}
+.login-logo { font-size: 24px; font-weight: 800; letter-spacing: 4px; color: #e2e8f0; margin-bottom: 6px; }
+.login-tagline { font-size: 10px; color: #475569; margin-bottom: 32px; letter-spacing: 1px; }
+.login-label { font-size: 9px; color: #64748b; letter-spacing: 1px; text-align: left; margin-bottom: 6px; }
+.login-input {
+  width: 100%; background: #050810; border: 1px solid #334155; border-radius: 6px;
+  color: #e2e8f0; padding: 10px 12px; font-size: 11px; font-family: inherit;
+  margin-bottom: 16px; outline: none;
+}
+.login-input:focus { border-color: #22c55e; }
+.login-btn {
+  width: 100%; background: #166534; color: #fff; border: none; border-radius: 6px;
+  padding: 10px; font-size: 12px; font-weight: 700; cursor: pointer; letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+.login-btn:hover { background: #15803d; }
+.login-note { font-size: 8px; color: #334155; line-height: 1.6; }
+.login-error { font-size: 9px; color: #ef4444; margin-bottom: 12px; display: none; }
+
+/* ── Header ───────────────────────────────────────────────── */
+.header { background: #0a0f1a; border-bottom: 1px solid #1e293b; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
 .header-left { display: flex; align-items: center; gap: 10px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #475569; transition: all 0.3s; }
 .dot.on { background: #22c55e; box-shadow: 0 0 12px #22c55e; animation: pulse 2s infinite; }
@@ -23,41 +53,49 @@ button { font-family: inherit; cursor: pointer; }
 .btn-outline { background: transparent; color: #64748b; border: 1px solid #334155; }
 .status-txt { font-size: 9px; color: #64748b; }
 .fleet-sel { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 5px; padding: 5px 8px; font-size: 11px; }
+.key-badge { font-size: 8px; color: #22c55e; background: #052e16; border: 1px solid #166534; border-radius: 4px; padding: 3px 8px; }
 
+/* ── Banner ───────────────────────────────────────────────── */
 .banner { background: linear-gradient(90deg,#052e16 0%,#0a0f1a 40%,#0c4a6e 100%); padding: 12px 20px; display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; border-bottom: 1px solid #1e293b; }
 .banner-item { text-align: center; }
 .banner-label { font-size: 7px; color: #64748b; letter-spacing: 1.5px; margin-bottom: 3px; }
 .banner-value { font-size: 18px; font-weight: 700; transition: all 0.5s; }
 
-.main { display: grid; grid-template-columns: 1fr 300px; height: calc(100vh - 160px); }
+/* ── Main layout ──────────────────────────────────────────── */
+.main { display: grid; grid-template-columns: 1fr 300px; height: calc(100vh - 155px); }
 .agents-col { padding: 12px; overflow-y: auto; }
 .log-col { border-left: 1px solid #1e293b; display: flex; flex-direction: column; }
-.log-header { padding: 10px 12px; border-bottom: 1px solid #1e293b; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+.log-header { padding: 10px 12px; border-bottom: 1px solid #1e293b; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; display: flex; justify-content: space-between; }
 .log-body { flex: 1; overflow-y: auto; padding: 8px; }
 .log-entry { margin-bottom: 4px; padding: 5px 7px; background: #0a0f1a; border-radius: 3px; border-left: 2px solid #334155; }
 .log-time { font-size: 8px; color: #475569; }
 .log-msg { font-size: 9px; color: #cbd5e1; line-height: 1.4; }
 .log-empty { font-size: 10px; color: #334155; text-align: center; padding: 40px; }
 
+/* ── Agent cards ──────────────────────────────────────────── */
 .agents-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
 .agent-card { background: #0a0f1a; border-radius: 8px; border: 1px solid #1e293b; border-left: 3px solid #475569; padding: 12px; transition: border-color 0.4s; }
-
 .agent-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
 .agent-name { font-size: 13px; font-weight: 800; letter-spacing: 1px; }
 .agent-role { font-size: 8px; color: #64748b; margin-top: 2px; }
 .agent-meta { font-size: 7px; color: #475569; margin-top: 1px; }
 .badge { font-size: 7px; font-weight: 700; padding: 3px 7px; border-radius: 10px; letter-spacing: 1px; white-space: nowrap; }
-
 .progress-section { margin-bottom: 6px; }
 .progress-row { display: flex; justify-content: space-between; font-size: 7px; color: #475569; margin-bottom: 2px; }
 .bar { height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
 .bar-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
-
 .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 6px; }
 .stat { background: #050810; border-radius: 4px; padding: 4px 6px; text-align: center; border: 1px solid #0f172a; }
 .stat-label { font-size: 6px; color: #475569; letter-spacing: 0.5px; margin-bottom: 1px; }
 .stat-val { font-size: 12px; font-weight: 700; }
 
+/* Handover doc panel */
+.handover-panel { background: #050810; border: 1px solid #1e293b; border-radius: 6px; padding: 8px 10px; margin-top: 8px; font-size: 8px; }
+.handover-title { font-size: 7px; color: #818cf8; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
+.handover-section { color: #64748b; margin-bottom: 3px; }
+.handover-content { color: #94a3b8; margin-left: 8px; }
+
+/* ── Comparison panel ─────────────────────────────────────── */
 .compare { background: #0a0f1a; border: 1px solid #1e293b; border-radius: 8px; padding: 12px; margin-top: 8px; }
 .compare-title { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin-bottom: 10px; }
 .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -69,10 +107,32 @@ button { font-family: inherit; cursor: pointer; }
 .compare-meta { font-size: 8px; margin-bottom: 4px; }
 .compare-desc { font-size: 7px; line-height: 1.5; }
 
-.footer { border-top: 1px solid #1e293b; padding: 6px 20px; display: flex; justify-content: space-between; font-size: 7px; color: #334155; background: #050810; }
+.footer { border-top: 1px solid #1e293b; padding: 5px 20px; display: flex; justify-content: space-between; font-size: 7px; color: #334155; background: #050810; }
 </style>
 </head>
 <body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">● WHITE ROOM</div>
+    <div class="login-tagline">MARITIME-INSPIRED AGENT GOVERNANCE</div>
+    <div class="login-label">YOUR LLM API KEY</div>
+    <input type="password" class="login-input" id="api-key-input" 
+      placeholder="sk-ant-... or your API key" 
+      onkeydown="if(event.key==='Enter') connect()"/>
+    <div class="login-error" id="login-error">Could not find any fleets for this key. Make sure your agent has connected to WhiteRoom.</div>
+    <button class="login-btn" onclick="connect()">CONNECT TO MY FLEET →</button>
+    <div class="login-note">
+      Your key is never stored or sent to any third party.<br>
+      It is used only to identify your fleet in this session.<br><br>
+      To connect your agent: set <strong>ANTHROPIC_BASE_URL=https://whiteroom-m4j4.onrender.com</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Main Dashboard -->
+<div id="dashboard" style="display:none">
 
 <div class="header">
   <div class="header-left">
@@ -81,12 +141,13 @@ button { font-family: inherit; cursor: pointer; }
     <span class="subtitle">10min ON / 5min HANDOVER / 10min REST</span>
   </div>
   <div class="header-right">
-    <select class="fleet-sel" id="fleet-sel">
-      <option value="">Loading fleets...</option>
+    <span class="key-badge" id="key-badge">● CONNECTED</span>
+    <select class="fleet-sel" id="fleet-sel" onchange="onFleetChange()">
+      <option value="">Loading...</option>
     </select>
-    <span class="status-txt" id="status-txt">Stopped</span>
+    <span class="status-txt" id="status-txt">Connecting...</span>
     <button class="btn btn-green" id="btn-run" onclick="toggle()">RUN LIVE</button>
-    <button class="btn btn-outline" onclick="resetDash()">Reset</button>
+    <button class="btn btn-outline" onclick="logout()">Sign Out</button>
   </div>
 </div>
 
@@ -102,7 +163,9 @@ button { font-family: inherit; cursor: pointer; }
 <div class="main">
   <div class="agents-col">
     <div class="agents-grid" id="agents-grid">
-      <div style="color:#334155;padding:40px;text-align:center;grid-column:span 2;font-size:11px">Press RUN LIVE to connect to WhiteRoom</div>
+      <div style="color:#334155;padding:40px;text-align:center;grid-column:span 2;font-size:11px">
+        Press RUN LIVE to monitor your fleet
+      </div>
     </div>
     <div class="compare" id="compare" style="display:none">
       <div class="compare-title">CONTINUOUS vs WHITE ROOM — LIVE COMPARISON</div>
@@ -134,9 +197,11 @@ button { font-family: inherit; cursor: pointer; }
 </div>
 
 <div class="footer">
-  <span>White Room v0.5 | Live Monitor: https://whiteroom-m4j4.onrender.com</span>
+  <span>White Room v1.1 | Live Monitor: https://whiteroom-m4j4.onrender.com</span>
   <span>Maritime-inspired agent labor governance | MIT Sloan 15.S12 | © 2026 Nyari Nain · Artory.AI</span>
 </div>
+
+</div><!-- end dashboard -->
 
 <script>
 const WHITEROOM = "https://whiteroom-m4j4.onrender.com";
@@ -144,64 +209,132 @@ const COST_PER_1K = 0.003;
 const ENERGY_PER_1M = 0.4;
 const POLL_MS = 10000;
 
+let apiKey = null;
 let running = false, pollTimer = null;
-let logEvents = new Set();
-let logEntries = [];
-let agentState = {};
-
-const ROLE_MAP = {
-  alpha: "Lead Planner", bravo: "Planner (Relief)",
-  charlie: "Coordinator", delta: "Coord. (Relief)",
-  echo: "Vendor Manager", foxtrot: "Vendor (Relief)",
-  unknown: "CrewAI Agent"
-};
-
-function getRole(id) { return ROLE_MAP[id] || id.charAt(0).toUpperCase() + id.slice(1); }
+let logEvents = new Set(), logEntries = [], agentState = {};
 
 const SC = {
-  working:  { border: "#22c55e", badgeBg: "#052e16", badgeTx: "#4ade80", badgeBd: "#22c55e", bar: "#22c55e" },
-  overtime: { border: "#f59e0b", badgeBg: "#451a03", badgeTx: "#fbbf24", badgeBd: "#f59e0b", bar: "#f59e0b" },
-  resting:  { border: "#0ea5e9", badgeBg: "#0c4a6e", badgeTx: "#38bdf8", badgeBd: "#0ea5e9", bar: "#0ea5e9" },
-  idle:     { border: "#475569", badgeBg: "#1e293b", badgeTx: "#94a3b8", badgeBd: "#475569", bar: "#475569" },
+  working:  { border:"#22c55e", badgeBg:"#052e16", badgeTx:"#4ade80", badgeBd:"#22c55e", bar:"#22c55e" },
+  overtime: { border:"#f59e0b", badgeBg:"#451a03", badgeTx:"#fbbf24", badgeBd:"#f59e0b", bar:"#f59e0b" },
+  resting:  { border:"#0ea5e9", badgeBg:"#0c4a6e", badgeTx:"#38bdf8", badgeBd:"#0ea5e9", bar:"#0ea5e9" },
+  idle:     { border:"#475569", badgeBg:"#1e293b", badgeTx:"#94a3b8", badgeBd:"#475569", bar:"#475569" },
 };
-
 const LOG_COLORS = { task:"#22c55e", handover:"#818cf8", rest:"#0ea5e9", alarm:"#f43f5e", info:"#334155" };
 
-function getFleet() { return document.getElementById("fleet-sel").value; }
+const ROLE_MAP = {
+  alpha:"Lead Planner", bravo:"Planner (Relief)",
+  charlie:"Coordinator", delta:"Coord. (Relief)",
+  echo:"Vendor Manager", foxtrot:"Vendor (Relief)",
+  unknown:"Agent"
+};
 
-async function api(body) {
+function getRole(id) { return ROLE_MAP[id] || id; }
+
+async function api(body, key) {
+  const k = key || apiKey;
   const r = await fetch(`${WHITEROOM}/api/white-room`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": k || "" },
     body: JSON.stringify({ ...body, fleet_id: getFleet() })
   });
   return r.json();
 }
 
-// Auto-discover fleets on page load
-async function loadFleets() {
+async function apiNoFleet(body, key) {
+  const k = key || apiKey;
+  const r = await fetch(`${WHITEROOM}/api/white-room`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": k || "" },
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+// ── Login ──────────────────────────────────────────────────
+async function connect() {
+  const key = document.getElementById("api-key-input").value.trim();
+  if (!key) return;
+
+  const btn = document.querySelector(".login-btn");
+  btn.textContent = "CONNECTING...";
+  btn.disabled = true;
+
   try {
+    // Try to list fleets with this key
     const res = await fetch(`${WHITEROOM}/api/white-room`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": key },
       body: JSON.stringify({ action: "list_fleets" })
     });
     const data = await res.json();
-    const sel = document.getElementById("fleet-sel");
+
     if (data.fleets && data.fleets.length > 0) {
-      sel.innerHTML = data.fleets.map(f =>
-        `<option value="${f.fleetId}">${f.fleetId} (${f.agentCount} agents)</option>`
-      ).join("");
+      apiKey = key;
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("dashboard").style.display = "block";
+      document.getElementById("key-badge").textContent = "● " + key.slice(0,8) + "...";
+      populateFleets(data.fleets);
+      startPolling();
     } else {
-      sel.innerHTML = '<option value="default">default</option>';
+      // No fleets yet — still let them in, they may be about to connect an agent
+      apiKey = key;
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("dashboard").style.display = "block";
+      document.getElementById("key-badge").textContent = "● " + key.slice(0,8) + "...";
+      await loadFleets();
+      startPolling();
     }
   } catch(e) {
-    document.getElementById("fleet-sel").innerHTML = '<option value="default">default</option>';
+    document.getElementById("login-error").style.display = "block";
+    document.getElementById("login-error").textContent = "Could not connect to WhiteRoom. Check your connection.";
+  }
+
+  btn.textContent = "CONNECT TO MY FLEET →";
+  btn.disabled = false;
+}
+
+function logout() {
+  stopPolling();
+  apiKey = null;
+  logEvents.clear(); logEntries = []; agentState = {};
+  document.getElementById("api-key-input").value = "";
+  document.getElementById("login-error").style.display = "none";
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("dashboard").style.display = "none";
+}
+
+// ── Fleet management ───────────────────────────────────────
+function getFleet() { return document.getElementById("fleet-sel").value; }
+
+function onFleetChange() {
+  logEvents.clear(); logEntries = []; agentState = {};
+  renderLog();
+}
+
+function populateFleets(fleets) {
+  const sel = document.getElementById("fleet-sel");
+  if (fleets.length > 0) {
+    sel.innerHTML = fleets.map(f =>
+      `<option value="${f.fleetId}">${f.fleetId} (${f.agentCount} agents)</option>`
+    ).join("");
+  } else {
+    sel.innerHTML = '<option value="default">No fleets yet — connect an agent</option>';
   }
 }
 
-// Refresh fleets every 30 seconds to pick up new agents
-loadFleets();
-setInterval(loadFleets, 30000);
+async function loadFleets() {
+  try {
+    const res = await fetch(`${WHITEROOM}/api/white-room`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+      body: JSON.stringify({ action: "list_fleets" })
+    });
+    const data = await res.json();
+    if (data.fleets) populateFleets(data.fleets);
+  } catch(e) {}
+}
 
+// ── Polling ────────────────────────────────────────────────
 function toggle() { running ? stopPolling() : startPolling(); }
 
 function startPolling() {
@@ -209,9 +342,9 @@ function startPolling() {
   document.getElementById("dot").className = "dot on";
   document.getElementById("btn-run").textContent = "STOP";
   document.getElementById("btn-run").className = "btn btn-red";
-  document.getElementById("status-txt").textContent = "Connecting...";
   poll();
   pollTimer = setInterval(poll, POLL_MS);
+  setInterval(loadFleets, 30000);
 }
 
 function stopPolling() {
@@ -223,26 +356,16 @@ function stopPolling() {
   document.getElementById("status-txt").textContent = "Stopped";
 }
 
-function resetDash() {
-  stopPolling();
-  logEvents.clear(); logEntries = []; agentState = {};
-  document.getElementById("agents-grid").innerHTML = '<div style="color:#334155;padding:40px;text-align:center;grid-column:span 2;font-size:11px">Press RUN LIVE to connect to WhiteRoom</div>';
-  document.getElementById("compare").style.display = "none";
-  document.getElementById("log-body").innerHTML = '<div class="log-empty">Press RUN LIVE to start</div>';
-  document.getElementById("log-count").textContent = "0 events";
-  ["b-tasks","b-tokens","b-saved","b-cost","b-energy","b-handovers"].forEach(id => document.getElementById(id).textContent = "—");
-}
-
 async function poll() {
+  if (!getFleet()) return;
   try {
     const report = await api({ action: "fleet_report" });
-    if (report.error) { document.getElementById("status-txt").textContent = "Error: " + report.error; return; }
+    if (report.error) { document.getElementById("status-txt").textContent = report.error; return; }
 
     document.getElementById("status-txt").textContent = "Live · " + new Date().toLocaleTimeString();
 
-    // Banner — use WhiteRoom's own calculations
-    const t = report.totals;
-    const es = report.energySavings;
+    // Banner
+    const t = report.totals, es = report.energySavings;
     document.getElementById("b-tasks").textContent = t.tasks;
     document.getElementById("b-tokens").textContent = (t.tokens/1000).toFixed(1) + "K";
     document.getElementById("b-saved").textContent = (es.estimatedTokensSaved/1000).toFixed(0) + "K";
@@ -250,14 +373,11 @@ async function poll() {
     document.getElementById("b-energy").textContent = es.estimatedEnergySaved;
     document.getElementById("b-handovers").textContent = t.handovers;
 
-    // Comparison panel
-    const withRest = t.tokens;
-    const noRest = t.tokens + (es.estimatedTokensSaved || 0);
-    const costWith = (withRest/1000) * COST_PER_1K;
-    const costNo = (noRest/1000) * COST_PER_1K;
-    const energyWith = (withRest/1000000) * ENERGY_PER_1M;
-    const energyNo = (noRest/1000000) * ENERGY_PER_1M;
-    const savePct = noRest > 0 ? ((1 - withRest/noRest)*100).toFixed(1) : "0";
+    // Comparison
+    const withRest = t.tokens, noRest = t.tokens + (es.estimatedTokensSaved||0);
+    const costWith = (withRest/1000)*COST_PER_1K, costNo = (noRest/1000)*COST_PER_1K;
+    const energyWith = (withRest/1000000)*ENERGY_PER_1M, energyNo = (noRest/1000000)*ENERGY_PER_1M;
+    const savePct = noRest > 0 ? ((1-withRest/noRest)*100).toFixed(1) : "0";
     document.getElementById("compare").style.display = "block";
     document.getElementById("c-no-rest").textContent = (noRest/1000).toFixed(1) + "K tokens";
     document.getElementById("c-no-rest-meta").textContent = `$${costNo.toFixed(4)} | ${energyNo.toFixed(5)} kWh`;
@@ -267,68 +387,74 @@ async function poll() {
       ? `${t.handovers} handover(s) completed. ${savePct}% fewer tokens. Context resets kept costs low.`
       : "Savings accumulate after first handover.";
 
-    // Audit log — only new events
+    // Audit log
     if (report.recentAudit) {
       [...report.recentAudit].reverse().forEach(evt => {
         if (logEvents.has(evt.id)) return;
         logEvents.add(evt.id);
-        const type = evt.type === "task_complete" ? "task"
-          : evt.type.includes("handover") ? "handover"
-          : evt.type.includes("rest") || evt.type === "watch_end" ? "rest"
-          : evt.type === "alarm" || evt.type === "watch_start" ? "alarm" : "info";
-        let msg = evt.type === "task_complete"
-          ? `✓ ${evt.agentId.toUpperCase()}: task done | ${(evt.tokensUsed/1000).toFixed(1)}K tokens | ${evt.remaining}min remaining`
+        const type = evt.type==="task_complete"?"task":evt.type.includes("handover")?"handover":evt.type.includes("rest")||evt.type==="watch_end"?"rest":evt.type==="alarm"||evt.type==="watch_start"?"alarm":"info";
+        const msg = evt.type==="task_complete"
+          ? `✓ ${evt.agentId.toUpperCase()}: task done | ${(evt.tokensUsed/1000).toFixed(1)}K tokens | ${evt.remaining}min left`
           : evt.type.includes("handover") ? `🔄 HANDOVER: ${evt.agentId.toUpperCase()} → relief`
-          : evt.type === "watch_start" ? `▶ ${evt.agentId.toUpperCase()} watch started`
-          : evt.type === "register" ? `📋 ${evt.agentId.toUpperCase()} registered (${evt.role})`
+          : evt.type==="watch_start" ? `▶ ${evt.agentId.toUpperCase()} watch started`
+          : evt.type==="register" ? `📋 ${evt.agentId.toUpperCase()} registered (${evt.role})`
           : `${evt.agentId.toUpperCase()}: ${evt.type}`;
         logEntries.unshift({ msg, color: LOG_COLORS[type]||LOG_COLORS.info, time: new Date(evt.timestamp).toLocaleTimeString("en-US",{hour12:false}) });
       });
-      if (logEntries.length > 150) logEntries = logEntries.slice(0, 150);
+      if (logEntries.length > 150) logEntries = logEntries.slice(0,150);
       renderLog();
     }
 
-    // Fetch all agent statuses in parallel
-    const allIds = [...(report.status.working||[]), ...(report.status.resting||[]), ...(report.status.idle||[])];
+    // Agent cards
+    const allIds = [...(report.status.working||[]),...(report.status.resting||[]),...(report.status.idle||[])];
     const agentData = await Promise.all(allIds.map(id => api({action:"check_watch",agent_id:id}).then(d=>({id,...d})).catch(()=>null)));
     
-    // Update health state
-    agentData.filter(Boolean).forEach(d => {
-      if (!agentState[d.id]) agentState[d.id] = { health: 100, restProgress: 0 };
-      const pct = parseFloat((d.percentComplete||"0").toString().replace("%","")) || 0;
-      if (d.status === "working") agentState[d.id].health = Math.max(20, 100 - (pct * 0.75));
-      else if (d.status === "resting") {
-        agentState[d.id].health = Math.min(100, (agentState[d.id].health||50) + 6);
-        agentState[d.id].restProgress = Math.min(100, (agentState[d.id].restProgress||0) + 12);
-      } else { agentState[d.id].health = 100; agentState[d.id].restProgress = 0; }
-    });
+    // Update health + fetch handover docs for resting agents
+    const handoverDocs = {};
+    await Promise.all(agentData.filter(Boolean).map(async d => {
+      if (!agentState[d.id]) agentState[d.id] = { health:100, restProgress:0 };
+      const pct = parseFloat((d.percentComplete||"0").toString().replace("%",""))||0;
+      if (d.status==="working") agentState[d.id].health = Math.max(20, 100-(pct*0.75));
+      else if (d.status==="resting") {
+        agentState[d.id].health = Math.min(100,(agentState[d.id].health||50)+6);
+        agentState[d.id].restProgress = Math.min(100,(agentState[d.id].restProgress||0)+12);
+      } else { agentState[d.id].health=100; agentState[d.id].restProgress=0; }
+      
+      // Fetch handover doc for resting agents
+      if (d.status === "resting") {
+        try {
+          const hdoc = await api({ action:"get_handover", agent_id:d.id });
+          if (hdoc.handoverDoc) handoverDocs[d.id] = hdoc.handoverDoc;
+        } catch(e) {}
+      }
+    }));
 
-    renderAgents(agentData.filter(Boolean));
+    renderAgents(agentData.filter(Boolean), handoverDocs);
   } catch(e) {
     document.getElementById("status-txt").textContent = "Poll error — retrying...";
-    console.error(e);
   }
 }
 
-function renderAgents(agents) {
+function renderAgents(agents, handoverDocs) {
   if (!agents.length) return;
   let html = "";
   agents.forEach(d => {
-    const s = agentState[d.id] || {};
-    const status = d.status || "idle";
-    const sc = SC[status] || SC.idle;
-    const pct = parseFloat((d.percentComplete||"0").toString().replace("%","")) || 0;
-    const health = s.health || 100;
-    const healthColor = health >= 80 ? "#22c55e" : health >= 55 ? "#4ade80" : health >= 35 ? "#f59e0b" : "#ef4444";
-    const watchBarColor = pct > 85 && status !== "resting" ? "#f59e0b" : sc.bar;
-    const watchDisplay = status === "resting" ? s.restProgress || 0 : pct;
-    const tokens = d.tokensUsed || 0;
+    const s = agentState[d.id]||{};
+    const status = d.status||"idle";
+    const sc = SC[status]||SC.idle;
+    const pct = parseFloat((d.percentComplete||"0").toString().replace("%",""))||0;
+    const health = s.health||100;
+    const healthColor = health>=80?"#22c55e":health>=55?"#4ade80":health>=35?"#f59e0b":"#ef4444";
+    const watchBarColor = pct>85&&status!=="resting"?"#f59e0b":sc.bar;
+    const watchDisplay = status==="resting"?s.restProgress||0:pct;
+    const tokens = d.tokensUsed||0;
+    const hdoc = handoverDocs[d.id];
 
     html += `<div class="agent-card" style="border-left-color:${sc.border}">
       <div class="agent-header">
         <div>
           <div class="agent-name">${d.id.toUpperCase()}</div>
-          <div class="agent-role">${d.role || getRole(d.id)}</div>
+          <div class="agent-role">${getRole(d.id)}</div>
           <div class="agent-meta">Watch #${d.watchNumber||1} · ${d.tasksCompleted||0} tasks · ${d.minutesWorked||0}min worked</div>
         </div>
         <span class="badge" style="background:${sc.badgeBg};color:${sc.badgeTx};border:1px solid ${sc.badgeBd}">${status.toUpperCase()}</span>
@@ -343,8 +469,20 @@ function renderAgents(agents) {
         <div class="stat"><div class="stat-label">TOKENS USED</div><div class="stat-val" style="color:${tokens>20000?"#f59e0b":"#e2e8f0"}">${(tokens/1000).toFixed(1)}K</div></div>
         <div class="stat"><div class="stat-label">WATCH %</div><div class="stat-val" style="color:${pct>80?"#f59e0b":"#e2e8f0"}">${pct.toFixed(0)}%</div></div>
         <div class="stat"><div class="stat-label">HANDOVERS</div><div class="stat-val" style="color:#818cf8">${Math.max(0,(d.watchNumber||1)-1)}</div></div>
-      </div>
-    </div>`;
+      </div>`;
+
+    // Show handover doc if agent is resting
+    if (hdoc) {
+      html += `<div class="handover-panel">
+        <div class="handover-title">🔄 HANDOVER DOCUMENT — COMPRESSED CONTEXT</div>`;
+      if (hdoc.state) html += `<div class="handover-section">STATE: <span class="handover-content">${hdoc.state.slice(0,120)}...</span></div>`;
+      if (hdoc.pending && hdoc.pending.length) html += `<div class="handover-section">PENDING: <span class="handover-content">${hdoc.pending.map(p=>p.task).slice(0,2).join(", ")}</span></div>`;
+      if (hdoc.warnings && hdoc.warnings.length) html += `<div class="handover-section">⚠ ${hdoc.warnings[0].slice(0,100)}</div>`;
+      if (hdoc.watch_summary) html += `<div class="handover-section">COMPRESSED: ${hdoc.watch_summary.tasks_completed} tasks, ${(hdoc.watch_summary.tokens_used/1000).toFixed(1)}K tokens → summary</div>`;
+      html += `</div>`;
+    }
+
+    html += `</div>`;
   });
   document.getElementById("agents-grid").innerHTML = html;
 }
@@ -352,7 +490,7 @@ function renderAgents(agents) {
 function renderLog() {
   const el = document.getElementById("log-body");
   if (!logEntries.length) { el.innerHTML = '<div class="log-empty">No events yet</div>'; return; }
-  el.innerHTML = logEntries.map(e => `<div class="log-entry" style="border-left-color:${e.color}"><div class="log-time">${e.time}</div><div class="log-msg">${e.msg}</div></div>`).join("");
+  el.innerHTML = logEntries.map(e=>`<div class="log-entry" style="border-left-color:${e.color}"><div class="log-time">${e.time}</div><div class="log-msg">${e.msg}</div></div>`).join("");
   document.getElementById("log-count").textContent = logEntries.length + " events";
 }
 </script>
