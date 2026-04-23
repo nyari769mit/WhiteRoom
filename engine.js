@@ -404,10 +404,8 @@ class WhiteRoom {
     return fleet.llmEndpoint || "https://api.anthropic.com";
   }
 
-}
 
-
-  setFleetKey(fleetId, apiKey) {
+setFleetKey(fleetId, apiKey) {
     const fleet = this._getOrCreateFleet(fleetId);
     if (!fleet.apiKeyHash) {
       const crypto = require("crypto");
@@ -434,5 +432,7 @@ class WhiteRoom {
     const fleet = this._getOrCreateFleet(fleetId);
     return fleet.llmEndpoint || "https://api.anthropic.com";
   }
+
+}
 
 module.exports = new WhiteRoom();
