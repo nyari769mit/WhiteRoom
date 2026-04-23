@@ -117,16 +117,16 @@ input { font-family: inherit; }
   <div class="login-card">
     <div class="login-logo">● WHITE ROOM</div>
     <div class="login-tagline">MARITIME-INSPIRED AGENT GOVERNANCE</div>
-    <div class="login-label">YOUR LLM API KEY</div>
+    <div class="login-label">YOUR FLEET TOKEN</div>
     <input type="password" class="login-input" id="api-key-input" 
-      placeholder="sk-ant-... or your API key" 
+      placeholder="wr_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" 
       onkeydown="if(event.key==='Enter') connect()"/>
     <div class="login-error" id="login-error">Could not find any fleets for this key. Make sure your agent has connected to WhiteRoom.</div>
     <button class="login-btn" onclick="connect()">CONNECT TO MY FLEET →</button>
     <div class="login-note">
       Your key is never stored or sent to any third party.<br>
       It is used only to identify your fleet in this session.<br><br>
-      To connect your agent: set <strong>ANTHROPIC_BASE_URL=https://whiteroom-m4j4.onrender.com</strong>
+      New here? Connect your agent first: set <strong>ANTHROPIC_BASE_URL=https://whiteroom-m4j4.onrender.com</strong> — your fleet token appears in the first API response.
     </div>
   </div>
 </div>
@@ -264,11 +264,13 @@ async function connect() {
     const res = await fetch(`${WHITEROOM}/api/white-room`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": key },
-      body: JSON.stringify({ action: "list_fleets" })
+      body: JSON.stringify({ action: "token_login", fleet_token: key })
     });
     const data = await res.json();
 
-    if (data.fleets && data.fleets.length > 0) {
+    if (data.success && data.fleetId) {
+      // Set fleet from token response
+      document.getElementById('fleet-sel').innerHTML = `<option value='${data.fleetId}'>${data.fleetId}</option>`;
       apiKey = key;
       document.getElementById("login-screen").style.display = "none";
       document.getElementById("dashboard").style.display = "block";
@@ -327,7 +329,7 @@ async function loadFleets() {
     const res = await fetch(`${WHITEROOM}/api/white-room`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": apiKey },
-      body: JSON.stringify({ action: "list_fleets" })
+      body: JSON.stringify({ action: "token_login", fleet_token: key })
     });
     const data = await res.json();
     if (data.fleets) populateFleets(data.fleets);
