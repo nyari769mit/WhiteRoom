@@ -195,10 +195,17 @@ app.post("/v1/messages", async (req, res) => {
     }
   } else if (watchStatus.status === "resting") {
     return res.status(429).json({
-      error: "Agent is resting in the White Room",
-      restRemaining: watchStatus.restRemaining,
-      alarmAt: watchStatus.alarmAt,
-      message: "This agent is in mandatory rest period. Call /api/white-room with action=fire_alarm to wake it."
+      type: "error",
+      error: {
+        type: "rate_limit_error",
+        message: "Agent is resting in the White Room. Rest remaining: " + watchStatus.restRemaining + ". Alarm at: " + watchStatus.alarmAt
+      },
+      whiteroom: {
+        reason: "resting",
+        restRemaining: watchStatus.restRemaining,
+        alarmAt: watchStatus.alarmAt,
+        message: "This agent is in mandatory rest period. Call /api/white-room with action=fire_alarm to wake it."
+      }
     });
   } else if (watchStatus.needsHandover) {
     // Auto-generate compression handover before blocking
@@ -261,6 +268,11 @@ const { URL } = require("url");
             }
           } catch(e) {
             console.error("Compression failed:", e.message);
+            whiteRoom.storeHandoverDoc(fleetId, agentId, { 
+              error: "Compression failed: " + e.message,
+              generated_at: new Date().toISOString(),
+              watch_summary: { tasks_completed: taskHistory.length }
+            });
           }
         });
       });
@@ -269,10 +281,17 @@ const { URL } = require("url");
     }
 
     return res.status(429).json({
-      error: "Agent has exceeded watch limit",
-      message: "This agent needs a handover before continuing. Call /api/white-room with action=initiate_handover.",
-      handoverGenerated: taskHistory.length > 0,
-      retrieveWith: { action: "get_handover", fleet_id: fleetId, agent_id: agentId }
+      type: "error",
+      error: {
+        type: "rate_limit_error",
+        message: "Agent has exceeded watch limit and needs a handover before continuing."
+      },
+      whiteroom: {
+        reason: "watch_limit_exceeded",
+        handoverGenerated: taskHistory.length > 0,
+        retrieveWith: { action: "get_handover", fleet_id: fleetId, agent_id: agentId },
+        message: "Call /api/white-room with action=initiate_handover to continue."
+      }
     });
   }
 
