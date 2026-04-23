@@ -117,9 +117,9 @@ input { font-family: inherit; }
   <div class="login-card">
     <div class="login-logo">● WHITE ROOM</div>
     <div class="login-tagline">MARITIME-INSPIRED AGENT GOVERNANCE</div>
-    <div class="login-label">YOUR FLEET TOKEN</div>
+    <div class="login-label">YOUR API KEY</div>
     <input type="password" class="login-input" id="api-key-input" 
-      placeholder="wr_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" 
+      placeholder="sk-ant-... or your LLM API key" 
       onkeydown="if(event.key==='Enter') connect()"/>
     <div class="login-error" id="login-error">Could not find any fleets for this key. Make sure your agent has connected to WhiteRoom.</div>
     <button class="login-btn" onclick="connect()">CONNECT TO MY FLEET →</button>
