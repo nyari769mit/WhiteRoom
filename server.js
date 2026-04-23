@@ -45,7 +45,7 @@ app.post("/api/white-room", (req, res) => {
 
 
     const requestKey = req.headers["x-api-key"] || (req.headers["authorization"] || "").replace("Bearer ", "");
-    const sensitiveActions = ["get_handover", "generate_handover", "store_handover", "fleet_report", "check_watch"];
+    const sensitiveActions = ["get_handover", "generate_handover", "store_handover", "fleet_report", "check_watch", "initiate_handover", "fire_alarm"];
     if (sensitiveActions.includes(action) && requestKey) {
       const fleetKeyHash = whiteRoom.getFleetKey(fleetId);
       if (fleetKeyHash) {
