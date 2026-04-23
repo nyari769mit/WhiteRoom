@@ -264,13 +264,11 @@ async function connect() {
     const res = await fetch(`${WHITEROOM}/api/white-room`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": key },
-      body: JSON.stringify({ action: "token_login", fleet_token: key })
+      body: JSON.stringify({ action: "list_fleets" })
     });
     const data = await res.json();
 
-    if (data.success && data.fleetId) {
-      // Set fleet from token response
-      document.getElementById('fleet-sel').innerHTML = `<option value='${data.fleetId}'>${data.fleetId}</option>`;
+    if (data.fleets && data.fleets.length > 0) {
       apiKey = key;
       document.getElementById("login-screen").style.display = "none";
       document.getElementById("dashboard").style.display = "block";
@@ -329,7 +327,7 @@ async function loadFleets() {
     const res = await fetch(`${WHITEROOM}/api/white-room`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": apiKey },
-      body: JSON.stringify({ action: "token_login", fleet_token: key })
+      body: JSON.stringify({ action: "list_fleets" })
     });
     const data = await res.json();
     if (data.fleets) populateFleets(data.fleets);
