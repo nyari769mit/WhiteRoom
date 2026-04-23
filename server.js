@@ -340,6 +340,9 @@ setInterval(() => {
   }
 }, 30000);
 
+// Load persisted fleet keys on startup
+whiteRoom._loadFleetKeys();
+
 app.listen(PORT, () => {
   console.log(`White Room running on port ${PORT}`);
 });

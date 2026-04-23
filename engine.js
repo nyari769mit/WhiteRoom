@@ -396,11 +396,35 @@ class WhiteRoom {
     return null;
   }
 
+
+  _saveFleetKeys() {
+    const fs = require("fs");
+    const keys = {};
+    for (const [fleetId, fleet] of this.fleets) {
+      if (fleet.apiKeyHash) keys[fleetId] = { apiKeyHash: fleet.apiKeyHash, llmEndpoint: fleet.llmEndpoint || "https://api.anthropic.com" };
+    }
+    try { fs.writeFileSync("./fleet-keys.json", JSON.stringify(keys, null, 2)); } catch(e) {}
+  }
+
+  _loadFleetKeys() {
+    const fs = require("fs");
+    try {
+      const keys = JSON.parse(fs.readFileSync("./fleet-keys.json", "utf8"));
+      for (const [fleetId, data] of Object.entries(keys)) {
+        const fleet = this._getOrCreateFleet(fleetId);
+        fleet.apiKeyHash = data.apiKeyHash;
+        fleet.llmEndpoint = data.llmEndpoint;
+      }
+      console.log("Fleet keys loaded from disk:", Object.keys(keys).join(", "));
+    } catch(e) {}
+  }
+
   setFleetKey(fleetId, apiKey) {
     const fleet = this._getOrCreateFleet(fleetId);
     if (!fleet.apiKeyHash) {
       const crypto = require("crypto");
       fleet.apiKeyHash = crypto.createHash("sha256").update(apiKey).digest("hex").slice(0, 16);
+      this._saveFleetKeys();
     }
   }
   getFleetKey(fleetId) {
@@ -426,6 +450,7 @@ setFleetKey(fleetId, apiKey) {
     if (!fleet.apiKeyHash) {
       const crypto = require("crypto");
       fleet.apiKeyHash = crypto.createHash("sha256").update(apiKey).digest("hex").slice(0, 16);
+      this._saveFleetKeys();
     }
   }
 
