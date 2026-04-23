@@ -380,6 +380,30 @@ class WhiteRoom {
       recentAudit: fleet.audit.slice(-10)
     };
   }
+  setFleetKey(fleetId, apiKey) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    if (!fleet.apiKeyHash) {
+      const crypto = require("crypto");
+      fleet.apiKeyHash = crypto.createHash("sha256").update(apiKey).digest("hex").slice(0, 16);
+    }
+  }
+  getFleetKey(fleetId) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    return fleet.apiKeyHash || null;
+  }
+  hashKey(apiKey) {
+    const crypto = require("crypto");
+    return crypto.createHash("sha256").update(apiKey).digest("hex").slice(0, 16);
+  }
+  setFleetEndpoint(fleetId, endpoint) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    fleet.llmEndpoint = endpoint;
+  }
+  getFleetEndpoint(fleetId) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    return fleet.llmEndpoint || "https://api.anthropic.com";
+  }
+
 }
 
 
