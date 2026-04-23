@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhiteRoom — Documentation</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #050810;
+  --bg2: #0a0f1a;
+  --bg3: #0f172a;
+  --border: #1e293b;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #475569;
+  --green: #22c55e;
+  --green-dim: #052e16;
+  --blue: #0ea5e9;
+  --blue-dim: #0c4a6e;
+  --purple: #818cf8;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.6; }
+
+/* ── Nav ───────────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(5,8,16,0.95); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { font-family: var(--mono); font-weight: 700; font-size: 14px; letter-spacing: 3px; color: var(--text); }
+.nav-logo span { color: var(--green); }
+.nav-links { display: flex; gap: 32px; }
+.nav-links a { color: var(--text2); text-decoration: none; font-size: 13px; font-weight: 500; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); }
+.nav-cta { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); border-radius: 6px; padding: 7px 16px; font-size: 12px; font-weight: 700; font-family: var(--mono); text-decoration: none; letter-spacing: 1px; transition: all 0.2s; }
+.nav-cta:hover { background: var(--green); color: #000; }
+
+/* ── Hero ──────────────────────────────────────────────────── */
+.hero {
+  padding: 140px 40px 80px;
+  max-width: 900px; margin: 0 auto; text-align: center;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 6px 14px; margin-bottom: 32px;
+  font-family: var(--mono); font-size: 11px; color: var(--text2); letter-spacing: 1px;
+}
+.hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 8px var(--green)}50%{box-shadow:0 0 16px var(--green)} }
+.hero h1 { font-size: 56px; font-weight: 700; letter-spacing: -1px; margin-bottom: 20px; line-height: 1.1; }
+.hero h1 span { color: var(--green); }
+.hero p { font-size: 18px; color: var(--text2); max-width: 600px; margin: 0 auto 40px; font-weight: 300; }
+.hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary { background: var(--green); color: #000; border: none; border-radius: 8px; padding: 12px 28px; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; font-family: var(--sans); transition: all 0.2s; }
+.btn-primary:hover { background: #16a34a; }
+.btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 12px 28px; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; font-family: var(--sans); transition: all 0.2s; }
+.btn-secondary:hover { border-color: var(--text2); }
+
+/* ── Sections ──────────────────────────────────────────────── */
+section { padding: 80px 40px; max-width: 1000px; margin: 0 auto; }
+.section-label { font-family: var(--mono); font-size: 10px; color: var(--green); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+.section-title { font-size: 36px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 16px; }
+.section-sub { font-size: 16px; color: var(--text2); max-width: 600px; margin-bottom: 48px; font-weight: 300; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+/* ── How it works ──────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step { display: grid; grid-template-columns: 60px 1fr; gap: 24px; padding: 32px 0; border-bottom: 1px solid var(--border); }
+.step:last-child { border-bottom: none; }
+.step-num { width: 44px; height: 44px; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--green); flex-shrink: 0; }
+.step-content h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.step-content p { color: var(--text2); font-size: 14px; margin-bottom: 12px; }
+.step-tag { display: inline-block; background: var(--green-dim); color: var(--green); border: 1px solid var(--green); border-radius: 4px; padding: 2px 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 1px; }
+
+/* ── Quick start ───────────────────────────────────────────── */
+.quickstart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.qs-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 24px; }
+.qs-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.qs-num { width: 24px; height: 24px; border-radius: 50%; background: var(--green-dim); border: 1px solid var(--green); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; color: var(--green); font-weight: 700; flex-shrink: 0; }
+pre { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; font-family: var(--mono); font-size: 12px; color: #86efac; overflow-x: auto; margin: 8px 0; line-height: 1.6; }
+.qs-note { font-size: 12px; color: var(--text3); margin-top: 8px; }
+
+/* ── Features grid ─────────────────────────────────────────── */
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.feature-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 24px; transition: border-color 0.3s; }
+.feature-card:hover { border-color: var(--green); }
+.feature-icon { font-size: 24px; margin-bottom: 12px; }
+.feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.feature-card p { font-size: 13px; color: var(--text2); line-height: 1.6; }
+.feature-tag { display: inline-block; margin-top: 10px; background: var(--bg3); color: var(--text3); border-radius: 4px; padding: 2px 8px; font-family: var(--mono); font-size: 10px; }
+
+/* ── API Reference ─────────────────────────────────────────── */
+.api-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+.api-table th { text-align: left; padding: 10px 14px; background: var(--bg2); border: 1px solid var(--border); font-family: var(--mono); font-size: 11px; color: var(--text2); letter-spacing: 1px; }
+.api-table td { padding: 10px 14px; border: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+.api-table tr:nth-child(even) td { background: var(--bg2); }
+.api-action { font-family: var(--mono); font-size: 12px; color: var(--green); }
+.api-required { color: var(--red); font-size: 10px; font-family: var(--mono); }
+.api-optional { color: var(--text3); font-size: 10px; font-family: var(--mono); }
+
+/* ── Dashboard features ────────────────────────────────────── */
+.dash-features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.dash-item { display: flex; gap: 14px; padding: 20px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; }
+.dash-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.dash-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.dash-item p { font-size: 12px; color: var(--text2); }
+
+/* ── Cycle diagram ─────────────────────────────────────────── */
+.cycle { display: flex; align-items: center; gap: 0; flex-wrap: wrap; justify-content: center; margin: 40px 0; }
+.cycle-step { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; text-align: center; min-width: 140px; }
+.cycle-step.highlight { border-color: var(--green); background: var(--green-dim); }
+.cycle-step h4 { font-size: 12px; font-weight: 700; font-family: var(--mono); color: var(--green); letter-spacing: 1px; margin-bottom: 4px; }
+.cycle-step p { font-size: 11px; color: var(--text2); }
+.cycle-arrow { color: var(--text3); font-size: 20px; padding: 0 8px; }
+
+/* ── Limitations ───────────────────────────────────────────── */
+.limits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.limit-card { padding: 20px; border-radius: 10px; border: 1px solid; }
+.limit-card.known { background: #1c0f0f; border-color: #7f1d1d; }
+.limit-card.coming { background: var(--green-dim); border-color: #166534; }
+.limit-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.limit-card ul { list-style: none; }
+.limit-card li { font-size: 12px; color: var(--text2); padding: 4px 0; display: flex; gap: 8px; }
+.limit-card li::before { flex-shrink: 0; }
+.limit-card.known li::before { content: "⚠"; color: var(--amber); }
+.limit-card.coming li::before { content: "→"; color: var(--green); }
+
+/* ── Footer ────────────────────────────────────────────────── */
+footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 40px; text-align: center; }
+footer p { font-size: 13px; color: var(--text3); margin-bottom: 8px; }
+footer a { color: var(--text2); text-decoration: none; }
+footer a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">● WHITE<span>ROOM</span></div>
+  <div class="nav-links">
+    <a href="#how-it-works">How it works</a>
+    <a href="#quickstart">Quick start</a>
+    <a href="#features">Features</a>
+    <a href="#api">API</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#limitations">Limitations</a>
+  </div>
+  <a href="https://whiteroom-m4j4.onrender.com" class="nav-cta">OPEN DASHBOARD →</a>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge"><span class="dot"></span> LIVE · https://whiteroom-m4j4.onrender.com</div>
+  <h1>Governance for<br><span>AI Agent Fleets</span></h1>
+  <p>WhiteRoom enforces structured work/rest cycles for any LLM agent. One environment variable. Zero code changes. Framework agnostic.</p>
+  <div class="hero-btns">
+    <a href="https://whiteroom-m4j4.onrender.com" class="btn-primary">Open Dashboard</a>
+    <a href="https://github.com/nyari769mit/WhiteRoom" class="btn-secondary">View on GitHub</a>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- How it works -->
+<section id="how-it-works">
+  <div class="section-label">How it works</div>
+  <div class="section-title">The Universal Cycle</div>
+  <p class="section-sub">Every agent — whether solo or part of a fleet — follows the same governance cycle. Inspired by maritime watch systems.</p>
+
+  <div class="cycle">
+    <div class="cycle-step highlight">
+      <h4>WORK</h4>
+      <p>Agent works normally. WhiteRoom tracks tokens, tasks, time.</p>
+    </div>
+    <div class="cycle-arrow">→</div>
+    <div class="cycle-step">
+      <h4>LIMIT HIT</h4>
+      <p>Watch limit reached. WhiteRoom blocks further calls (429).</p>
+    </div>
+    <div class="cycle-arrow">→</div>
+    <div class="cycle-step">
+      <h4>COMPRESS</h4>
+      <p>Context compressed into structured handover document.</p>
+    </div>
+    <div class="cycle-arrow">→</div>
+    <div class="cycle-step">
+      <h4>REST</h4>
+      <p>Context cleared. Agent rests. Health recovers.</p>
+    </div>
+    <div class="cycle-arrow">→</div>
+    <div class="cycle-step highlight">
+      <h4>RESTART</h4>
+      <p>Agent resumes with only the compressed handover. Far fewer tokens.</p>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Agent calls WhiteRoom instead of the LLM directly</h3>
+        <p>WhiteRoom sits as a transparent proxy. The agent doesn't know it's being governed — it just makes normal API calls. WhiteRoom intercepts every request at the <code>/v1/messages</code> endpoint.</p>
+        <span class="step-tag">TRANSPARENT PROXY</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>WhiteRoom tracks every call</h3>
+        <p>Tokens used, tasks completed, minutes worked — all tracked per agent, per fleet. The audit log captures every event with timestamps. No instrumentation needed in your agent code.</p>
+        <span class="step-tag">AUTOMATIC TRACKING</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Watch limit triggers auto-compression</h3>
+        <p>When an agent exceeds its watch limit, WhiteRoom automatically calls the LLM one final time with a compression prompt. The agent's full task history is distilled into a structured handover document covering decisions made, current state, pending tasks, and warnings.</p>
+        <span class="step-tag">AUTO-COMPRESSION</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Relief agent or self-restart with compressed context</h3>
+        <p>For paired fleets: the compressed handover is passed to the relief agent. For solo agents: the agent restarts with only the handover summary as its starting context. Either way, the next session costs a fraction of the tokens.</p>
+        <span class="step-tag">CONTEXT RESET</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h3>Auto-alarm wakes the agent after rest</h3>
+        <p>WhiteRoom runs a background timer. When the rest period ends, it fires the alarm automatically. The agent resumes without any manual intervention. The full cycle repeats indefinitely.</p>
+        <span class="step-tag">FULLY AUTOMATIC</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Quick start -->
+<section id="quickstart">
+  <div class="section-label">Quick Start</div>
+  <div class="section-title">Connect in 60 seconds</div>
+  <p class="section-sub">No account. No installation. One environment variable.</p>
+
+  <div class="quickstart-grid">
+    <div class="qs-card">
+      <h3><div class="qs-num">1</div> Point your agent at WhiteRoom</h3>
+      <pre># Anthropic
+export ANTHROPIC_BASE_URL=\
+  https://whiteroom-m4j4.onrender.com
+
+# OpenAI / compatible
+export OPENAI_BASE_URL=\
+  https://whiteroom-m4j4.onrender.com</pre>
+      <p class="qs-note">Your existing API key and all your code stays the same. WhiteRoom intercepts calls automatically.</p>
+    </div>
+    <div class="qs-card">
+      <h3><div class="qs-num">2</div> Run your agent as normal</h3>
+      <pre># Python example
+from anthropic import Anthropic
+client = Anthropic()  # uses env var
+
+# Node.js example
+const anthropic = new Anthropic();
+// uses ANTHROPIC_BASE_URL automatically</pre>
+      <p class="qs-note">No SDK changes. No wrapper code. WhiteRoom is invisible to your agent.</p>
+    </div>
+    <div class="qs-card">
+      <h3><div class="qs-num">3</div> Open your personalized dashboard</h3>
+      <pre>https://whiteroom-m4j4.onrender.com</pre>
+      <p>Enter your API key on the login screen. WhiteRoom identifies your fleet automatically. Your key is hashed immediately — never stored raw.</p>
+      <p class="qs-note">Click RUN LIVE. Your agent appears within 10 seconds.</p>
+    </div>
+    <div class="qs-card">
+      <h3><div class="qs-num">4</div> Optional: register a paired fleet</h3>
+      <pre>curl -X POST \
+  https://whiteroom-m4j4.onrender.com\
+  /api/white-room \
+  -d '{"action":"register_agent",
+       "fleet_id":"my-fleet",
+       "agent_id":"primary",
+       "agent_role":"Researcher"}'</pre>
+      <p class="qs-note">Pairing enables handover between primary and relief agents for continuous operation.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Features -->
+<section id="features">
+  <div class="section-label">Features</div>
+  <div class="section-title">Everything WhiteRoom does</div>
+  <p class="section-sub">Governance at the infrastructure layer. No framework required.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Watch Limit Enforcement</h3>
+      <p>Agents are blocked with a 429 response when they exceed their watch limit. No agent can bypass governance — it's enforced at the proxy layer.</p>
+      <span class="feature-tag">CORE GOVERNANCE</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗜️</div>
+      <h3>Auto Context Compression</h3>
+      <p>When a watch limit is hit, WhiteRoom automatically generates a structured handover document using the LLM itself — decisions, state, pending tasks, warnings.</p>
+      <span class="feature-tag">AUTO-COMPRESSION</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💤</div>
+      <h3>Mandatory Rest Periods</h3>
+      <p>After handover, agents enter a rest period. All calls are blocked until rest is complete. WhiteRoom auto-fires the alarm when rest ends — no manual intervention.</p>
+      <span class="feature-tag">REST ENFORCEMENT</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔄</div>
+      <h3>Automatic Handover</h3>
+      <p>When a primary agent hits its limit, WhiteRoom automatically triggers handover to the paired relief agent. The compressed context is passed seamlessly.</p>
+      <span class="feature-tag">PAIRED FLEETS</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧍</div>
+      <h3>Single Agent Mode</h3>
+      <p>No relief agent needed. The agent compresses its own context, rests, then restarts fresh with only the handover summary. Same savings, solo operation.</p>
+      <span class="feature-tag">SELF-HANDOVER</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Live Governance Dashboard</h3>
+      <p>Personalized per API key. Auto-discovers your fleet. Shows watch progress, health decay, token accumulation, real savings vs ungoverned operation.</p>
+      <span class="feature-tag">REAL-TIME</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔑</div>
+      <h3>API Key Privacy</h3>
+      <p>Your key is SHA-256 hashed immediately on first use. Only the hash is stored — never the raw key. Used solely to identify your fleet.</p>
+      <span class="feature-tag">PRIVACY FIRST</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>LLM Agnostic</h3>
+      <p>Works with Anthropic, OpenAI, and any OpenAI-compatible API. Point any LLM client at WhiteRoom. Gemini support coming soon.</p>
+      <span class="feature-tag">ANY LLM</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <h3>Full Audit Trail</h3>
+      <p>Every event logged — registrations, task completions, handovers, alarms, rest periods. Timestamped and queryable via the fleet report endpoint.</p>
+      <span class="feature-tag">AUDIT LOG</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- API Reference -->
+<section id="api">
+  <div class="section-label">API Reference</div>
+  <div class="section-title">Governance endpoints</div>
+  <p class="section-sub">All calls go to <code style="font-family:var(--mono);color:var(--green)">POST /api/white-room</code> with a JSON body.</p>
+
+  <table class="api-table">
+    <tr>
+      <th>ACTION</th>
+      <th>REQUIRED FIELDS</th>
+      <th>DESCRIPTION</th>
+    </tr>
+    <tr>
+      <td><span class="api-action">register_agent</span></td>
+      <td><span class="api-required">fleet_id, agent_id</span><br><span class="api-optional">agent_role, llm_endpoint</span></td>
+      <td>Register an agent with a fleet. Pass <code>llm_endpoint</code> to use a non-Anthropic LLM.</td>
+    </tr>
+    <tr>
+      <td><span class="api-action">start_watch</span></td>
+      <td><span class="api-required">fleet_id, agent_id</span></td>
+      <td>Start the watch timer for an agent. Must be called before the agent begins work.</td>
+    </tr>
+    <tr>
+      <td><span class="api-action">check_watch</span></td>
+      <td><span class="api-required">fleet_id, agent_id</span></td>
+      <td>Get current watch status — minutes worked, tokens used, % complete, needsHandover flag.</td>
+    </tr>
+    <tr>
+      <td><span class="api-action">complete_task</span></td>
+      <td><span class="api-required">fleet_id, agent_id, task_name</span><br><span class="api-optional">minutes_spent, tokens_used</span></td>
+      <td>Log a completed task. Called automatically by WhiteRoom's proxy after each LLM call.</td>
+    </tr>
+    <tr>
+      <td><span class="api-action">pair_agents</span></td>
+      <td><span class="api-required">fleet_id, agent_id, paired_with</span></td>
+      <td>Pair a primary agent with its relief agent for automatic handover.</td>
+    </tr>
+    <tr>
+      <td><span class="api-action">initiate_handover</span></td>
+      <td><span class="api-required">fleet_id, agent_id, to_agent</span><br><span class="api-optional">context_summary</span></td>
+      <td>Trigger handover from primary to relief. Auto-triggered when watch limit is hit.</td>
+    </tr>
+    <tr>
+      <td><span class="api-action">fire_alarm</span></td>
+      <td><span class="api-required">fleet_id, agent_id</span></td>
+      <td>Wake a resting agent. Auto-fired by WhiteRoom's background timer when rest period ends.</td>
+    </tr>
+    <tr>
+      <td><span class="api-action">get_handover</span></td>
+      <td><span class="api-required">fleet_id, agent_id</span></td>
+      <td>Retrieve the compressed handover document for an agent. Requires the fleet's API key.</td>
+    </tr>
+    <tr>
+      <td><span class="api-action">fleet_report</span></td>
+      <td><span class="api-required">fleet_id</span></td>
+      <td>Full fleet status — agent counts, totals, savings, compliance, recent audit events.</td>
+    </tr>
+    <tr>
+      <td><span class="api-action">list_fleets</span></td>
+      <td><span class="api-optional">none</span></td>
+      <td>List all active fleets. Used by the dashboard to auto-discover your fleet.</td>
+    </tr>
+  </table>
+
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:24px">
+    <h3 style="font-size:14px;margin-bottom:12px">Example: Fleet report</h3>
+    <pre>curl -X POST https://whiteroom-m4j4.onrender.com/api/white-room \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{"action":"fleet_report","fleet_id":"my-fleet"}'</pre>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Dashboard -->
+<section id="dashboard">
+  <div class="section-label">Dashboard</div>
+  <div class="section-title">Your personalized governance view</div>
+  <p class="section-sub">Every user sees only their fleet. Auto-discovers agents. Updates every 10 seconds.</p>
+
+  <div class="dash-features">
+    <div class="dash-item">
+      <div class="dash-icon">🔐</div>
+      <div>
+        <h4>API Key Login</h4>
+        <p>Enter your LLM API key to authenticate. WhiteRoom identifies your fleet from the key hash. Your raw key is never stored or transmitted beyond the initial hash.</p>
+      </div>
+    </div>
+    <div class="dash-item">
+      <div class="dash-icon">🤖</div>
+      <div>
+        <h4>Auto-Discovery</h4>
+        <p>Any agent calling WhiteRoom with your key appears on the dashboard automatically. No manual registration needed for basic monitoring.</p>
+      </div>
+    </div>
+    <div class="dash-item">
+      <div class="dash-icon">❤️</div>
+      <div>
+        <h4>Health Tracking</h4>
+        <p>Agent health decays as watch progress increases and recovers during rest. Visual health bars show which agents are fatigued and which are fresh.</p>
+      </div>
+    </div>
+    <div class="dash-item">
+      <div class="dash-icon">📈</div>
+      <div>
+        <h4>Token Savings</h4>
+        <p>Live comparison between governed and ungoverned token usage. Savings appear after the first handover and compound with each subsequent cycle.</p>
+      </div>
+    </div>
+    <div class="dash-item">
+      <div class="dash-icon">🔄</div>
+      <div>
+        <h4>Handover Documents</h4>
+        <p>When an agent is resting, its compressed handover document is shown on the dashboard — state, decisions, pending tasks, and warnings from the previous session.</p>
+      </div>
+    </div>
+    <div class="dash-item">
+      <div class="dash-icon">📋</div>
+      <div>
+        <h4>Live Audit Log</h4>
+        <p>Every governance event — registrations, task completions, handovers, alarms — logged in real time with timestamps. Full traceability of agent activity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Limitations -->
+<section id="limitations">
+  <div class="section-label">Limitations & Roadmap</div>
+  <div class="section-title">What to know before using</div>
+  <p class="section-sub">WhiteRoom is early infrastructure. Here's what works, what doesn't, and what's coming.</p>
+
+  <div class="limits-grid">
+    <div class="limit-card known">
+      <h4 style="color:#fca5a5">⚠ Current Limitations</h4>
+      <ul>
+        <li>State is in-memory — restarts clear all agent registrations</li>
+        <li>Agents auto-re-register on next call after a restart</li>
+        <li>Gemini format not yet supported (OpenAI format only)</li>
+        <li>No horizontal scaling — single WhiteRoom instance</li>
+        <li>Watch/rest set to 10 minutes for testing (6 hours in production)</li>
+        <li>Handover context is LLM-generated — quality depends on task history richness</li>
+      </ul>
+    </div>
+    <div class="limit-card coming">
+      <h4 style="color:#86efac">→ Coming Next</h4>
+      <ul>
+        <li>Persistent state via Redis or SQLite</li>
+        <li>Skill-based agent queuing and task routing</li>
+        <li>Hierarchical fleet governance (orchestrator + sub-agents)</li>
+        <li>Gemini and other LLM format support</li>
+        <li>npm package — <code>npm install whiteroom</code></li>
+        <li>Python SDK — <code>pip install whiteroom</code></li>
+        <li>WebSocket real-time dashboard updates</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Footer -->
+<footer>
+  <p>Built by <strong>Nyari Nain</strong> · MIT Sloan Fellows MBA 2026 · </p>
+  <p>Research conducted as part of MIT Sloan 15.S12 — Agentic Web · Spring 2026</p>
+  <p style="margin-top:16px">
+    <a href="https://github.com/nyari769mit/WhiteRoom">GitHub</a> &nbsp;·&nbsp;
+    <a href="https://whiteroom-m4j4.onrender.com">Dashboard</a> &nbsp;·&nbsp;
+    <a href="mailto:nyari769@mit.edu">nyari769@mit.edu</a>
+  </p>
+  <p style="margin-top:16px;font-size:11px">© 2026 Nyari Nain  · MIT Sloan 15.S12</p>
+</footer>
+
+</body>
+</html>

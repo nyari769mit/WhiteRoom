@@ -61,25 +61,32 @@ In both cases the saving is the same — the agent never pays to carry its full 
 
 ### Connect any existing agent in 60 seconds
 
+**Step 1 — Point your agent at WhiteRoom**
+
 Set one environment variable before running your agent:
 
 ```bash
+# For Anthropic
 export ANTHROPIC_BASE_URL=https://whiteroom-m4j4.onrender.com
-# or for OpenAI-compatible clients:
+
+# For OpenAI / OpenAI-compatible
 export OPENAI_BASE_URL=https://whiteroom-m4j4.onrender.com
 ```
 
 Your existing API key and code stay exactly the same. WhiteRoom intercepts every `/v1/messages` call automatically.
 
-### Watch the live dashboard
+**Step 2 — Open your personalized dashboard**
 
-Open the dashboard to see your agent governed in real time:
-
+Visit:
 ```
 https://whiteroom-m4j4.onrender.com
 ```
 
-Click **RUN LIVE** — your agent appears within 10 seconds of its first call. No configuration needed.
+Enter your API key on the login screen. WhiteRoom identifies your fleet from your key and shows only your agents. Your key is never stored — it is hashed immediately and used only as a fleet identifier.
+
+**Step 3 — Watch your agents governed in real time**
+
+Click **RUN LIVE**. Your agents appear within 10 seconds of their first call. No configuration needed.
 
 ---
 
