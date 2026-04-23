@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const whiteRoom = require("./engine");
 const https = require("https");
+const { URL } = require("url");
 
 const app = express();
 app.use(express.json());
@@ -200,6 +201,7 @@ ${JSON.stringify(taskHistory.slice(-20), null, 2)}`;
       });
 
       const https = require("https");
+const { URL } = require("url");
       const compressionReq = https.request({
         hostname: "api.anthropic.com",
         port: 443,
@@ -246,11 +248,13 @@ ${JSON.stringify(taskHistory.slice(-20), null, 2)}`;
     });
   }
 
-  // Proxy the request to the real Claude API
+  // Proxy the request to the fleet's configured LLM endpoint
+  const llmEndpoint = whiteRoom.getFleetEndpoint(fleetId);
+  const llmUrl = new URL(llmEndpoint.includes("/v1/messages") ? llmEndpoint : llmEndpoint + "/v1/messages");
   const anthropicReq = https.request({
-    hostname: "api.anthropic.com",
+    hostname: llmUrl.hostname,
     port: 443,
-    path: "/v1/messages",
+    path: llmUrl.pathname,
     method: "POST",
     headers: {
       "Content-Type": "application/json",

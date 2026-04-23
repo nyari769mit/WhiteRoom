@@ -70,7 +70,7 @@ class WhiteRoom {
     return result;
   }
 
-  registerAgent(fleetId, agentId, role = "worker", watchMinutes = 10, restMinutes = 10, handoverMinutes = 5) {
+  registerAgent(fleetId, agentId, role = "worker", watchMinutes = 10, restMinutes = 10, handoverMinutes = 5, llmEndpoint = "https://api.anthropic.com") {
     const fleet = this._getOrCreateFleet(fleetId);
     if (fleet.agents[agentId]) {
       return { error: `Agent '${agentId}' already registered in fleet '${fleetId}'.` };
@@ -82,6 +82,7 @@ class WhiteRoom {
       status: "idle",          // idle | working | handover_out | handover_in | resting | alarm
       watchMinutes,
       restMinutes,
+      llmEndpoint,
       handoverMinutes,
       currentWatch: null,
       watchCount: 0,
