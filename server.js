@@ -43,9 +43,26 @@ app.post("/api/white-room", (req, res) => {
 
     const fleetId = fleet_id || "default";
 
+
+    const requestKey = req.headers["x-api-key"] || (req.headers["authorization"] || "").replace("Bearer ", "");
+    const sensitiveActions = ["get_handover", "generate_handover", "store_handover", "fleet_report", "check_watch"];
+    if (sensitiveActions.includes(action) && requestKey) {
+      const fleetKeyHash = whiteRoom.getFleetKey(fleetId);
+      if (fleetKeyHash) {
+        const requestKeyHash = whiteRoom.hashKey(requestKey);
+        if (requestKeyHash !== fleetKeyHash) {
+          return res.status(401).json({ error: "Unauthorized. Use the same API key that registered this fleet." });
+        }
+      }
+    }
+
     switch (action) {
       case "register_agent": {
         if (!agent_id) return res.status(400).json({ error: "agent_id is required." });
+        const regKey = req.headers["x-api-key"] || (req.headers["authorization"] || "").replace("Bearer ", "");
+        if (regKey) whiteRoom.setFleetKey(fleetId, regKey);
+        const { llm_endpoint } = req.body;
+        if (llm_endpoint) whiteRoom.setFleetEndpoint(fleetId, llm_endpoint);
         const result = whiteRoom.registerAgent(fleetId, agent_id, agent_role || "worker");
         return res.json(result);
       }
