@@ -1,0 +1,29 @@
+{
+  "name": "@whiteroom/shared",
+  "version": "0.1.0",
+  "description": "Shared types, constants, and utilities for WhiteRoom governance engine",
+  "license": "BSL-1.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "LICENSE", "README.md"],
+  "keywords": ["whiteroom", "ai-agents", "governance", "types"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guideage/whiteroom",
+    "directory": "packages/shared"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run --passWithNoTests",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "nanoid": "^5.0.0"
+  }
+}

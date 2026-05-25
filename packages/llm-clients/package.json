@@ -1,0 +1,31 @@
+{
+  "name": "@whiteroom/llm-clients",
+  "version": "0.1.0",
+  "description": "LLM provider clients with handover injection for WhiteRoom governance",
+  "license": "BSL-1.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "LICENSE", "README.md"],
+  "keywords": ["whiteroom", "ai-agents", "llm", "anthropic", "openai", "openrouter"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guideage/whiteroom",
+    "directory": "packages/llm-clients"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run --passWithNoTests",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@whiteroom/shared": "workspace:*",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "openai": "^4.80.0"
+  }
+}

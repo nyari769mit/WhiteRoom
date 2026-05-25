@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /t/
+Disallow: /api/
+
+Sitemap: https://whiteroom.tech/sitemap.xml

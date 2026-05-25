@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.next/
+.turbo/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+coverage/
+.DS_Store
+WhiteRoom_SPEC.md
+WhiteRoom_Spec*.md
+WhiteRoom_v2_Strategy_Brief.*

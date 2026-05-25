@@ -1,0 +1,29 @@
+{
+  "name": "@whiteroom/engine",
+  "version": "0.1.0",
+  "description": "Pure governance engine for AI agent fleet management — watch/rest cycles, handovers, routing",
+  "license": "BSL-1.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "LICENSE", "README.md"],
+  "keywords": ["whiteroom", "ai-agents", "governance", "engine", "watch-rest"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guideage/whiteroom",
+    "directory": "packages/engine"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@whiteroom/shared": "workspace:*"
+  }
+}
