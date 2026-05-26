@@ -6,6 +6,7 @@ export interface ShouldFireAlarmParams {
   now: Date;
 }
 
+/** Returns true if a resting agent should wake up. Returns false if the paired agent is still working (prevents the v1 bug of all agents running simultaneously). */
 export function shouldFireAlarm(params: ShouldFireAlarmParams): boolean {
   const { agent, pairedAgent, now } = params;
 

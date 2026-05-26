@@ -11,6 +11,7 @@ From the task history below, extract ONLY:
 Be ruthlessly concise. Every word costs tokens.
 Output valid JSON only — no preamble, no markdown.`;
 
+/** Builds the LLM messages array for handover compression from the last 20 tasks. */
 export function buildCompressionMessages(
   taskHistory: TaskSummary[],
 ): Array<{ role: 'user'; content: string }> {

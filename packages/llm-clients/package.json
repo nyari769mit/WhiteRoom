@@ -6,12 +6,21 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
+  "types": "./dist/index.d.ts",
   "files": ["dist", "LICENSE", "README.md"],
-  "keywords": ["whiteroom", "ai-agents", "llm", "anthropic", "openai", "openrouter"],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["whiteroom", "ai-agents", "llm", "anthropic", "openai", "openrouter", "proxy", "governance"],
+  "homepage": "https://whiteroom.tech",
+  "bugs": {
+    "url": "https://github.com/guideage/whiteroom/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/guideage/whiteroom",

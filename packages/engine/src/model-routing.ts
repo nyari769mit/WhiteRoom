@@ -12,6 +12,7 @@ const HAIKU_MODELS = ['claude-haiku-4-5'];
 const EXPENSIVE_MODELS = [...OPUS_MODELS, 'gpt-4o', 'gpt-4.1'];
 const CHEAP_MODELS = [...HAIKU_MODELS, 'gpt-4o-mini', 'gpt-4.1-mini'];
 
+/** Routes requests to the appropriate model tier — downgrades expensive models for simple tasks, upgrades cheap models for complex tasks. */
 export function selectModelForTier(requestedModel: string, taskTier: TaskTier): RoutingResult {
   if (taskTier === 'simple' && EXPENSIVE_MODELS.includes(requestedModel)) {
     const suggested = TIER_MODEL_MAP.simple;

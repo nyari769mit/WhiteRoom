@@ -1,6 +1,7 @@
 import type { AgentState, FleetConfig } from '@whiteroom/shared';
 import { watchProgress } from './watch-progress.js';
 
+/** Returns a health score (20-100) for dashboard visualization. Working agents decrease from 100 as they approach watch limit; resting agents recover over time. */
 export function agentHealth(agent: AgentState, fleet: FleetConfig): number {
   if (agent.status === 'idle') return 100;
 

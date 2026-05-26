@@ -16,6 +16,7 @@ export interface SavingsResult {
   savedCents: number;
 }
 
+/** Calculates token and cost savings from governance using the compounding formula: without WhiteRoom, context grows quadratically; with WhiteRoom, it stays flat. */
 export function estimateSavings(params: EstimateSavingsParams): SavingsResult {
   const { inputTokens, outputTokens, callCount, model } = params;
 

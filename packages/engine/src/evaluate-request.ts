@@ -12,6 +12,7 @@ export interface EvaluateRequestParams {
   now?: Date;
 }
 
+/** Core governance decision — determines whether an agent request should be allowed, compressed, blocked, or rerouted based on watch cycle state. */
 export function evaluateRequest(params: EvaluateRequestParams): GovernanceDecision {
   const { agent, fleet, estimatedTokens, taskTier, requestedModel, pairedAgent } = params;
   const now = params.now ?? new Date();

@@ -6,6 +6,7 @@ export interface PickAgentParams {
   taskTier: TaskTier;
 }
 
+/** Selects the best available agent for a task based on skill match and current utilization. Prefers idle agents, then least-loaded. */
 export function pickAgentForTask(
   params: PickAgentParams,
 ): { agentId: string; reason: string } | null {

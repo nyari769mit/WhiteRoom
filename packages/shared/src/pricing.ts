@@ -21,6 +21,7 @@ export const TIER_MODEL_MAP: Record<TaskTier, string> = {
   complex: 'claude-opus-4-7',
 };
 
+/** Calculates the estimated cost in cents for a given number of input/output tokens on a specific model. Returns 0 for unknown models. */
 export function calculateCostCents(
   inputTokens: number,
   outputTokens: number,
