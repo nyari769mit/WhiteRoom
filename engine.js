@@ -351,10 +351,27 @@ class WhiteRoom {
     const totalTasks = agents.reduce((s, a) => s + a.totalTasks, 0);
     const handoverCount = fleet.audit.filter(e => e.type === "handover").length;
 
-    // Estimate savings: each handover saves ~40K tokens of context bloat
-    const estimatedTokensSaved = handoverCount * 40000;
-    const costPerToken = 0.000003; // rough Sonnet pricing
-    const kwhPerToken = 0.000001;
+    // Real compounding savings formula:
+    // WITHOUT WhiteRoom: tokensWithout = avg × totalCalls × (totalCalls+1) / 2
+    // WITH WhiteRoom:    tokensPerWatch = avg × callsPerWatch × (callsPerWatch+1) / 2
+    //                   tokensWith = (tokensPerWatch × watchCount) + (300 × watchCount)
+    // saved = tokensWithout - tokensWith
+    const agentsWithData = agents.filter(a => a.totalTasks > 0 && a.watchCount > 0);
+    let estimatedTokensSaved = 0;
+    if (agentsWithData.length > 0) {
+      agentsWithData.forEach(a => {
+        const totalCalls = a.totalTasks;
+        const watches = a.watchCount;
+        const avgTokens = a.totalTokens / totalCalls;
+        const callsPerWatch = totalCalls / watches;
+        const tokensWithout = avgTokens * totalCalls * (totalCalls + 1) / 2;
+        const tokensPerWatch = avgTokens * callsPerWatch * (callsPerWatch + 1) / 2;
+        const tokensWith = (tokensPerWatch * watches) + (300 * watches);
+        estimatedTokensSaved += Math.max(0, tokensWithout - tokensWith);
+      });
+    }
+    const estimatedCost = (estimatedTokensSaved * 0.8 * 0.0000008) + (estimatedTokensSaved * 0.2 * 0.000004);
+    const kwhPerToken = 0.0000004;
 
     return {
       fleetId,
@@ -372,8 +389,9 @@ class WhiteRoom {
       },
       energySavings: {
         estimatedTokensSaved,
-        estimatedCostSaved: `$${(estimatedTokensSaved * costPerToken).toFixed(4)}`,
-        estimatedEnergySaved: `${(estimatedTokensSaved * kwhPerToken).toFixed(4)} kWh`
+        estimatedCostSaved: `$${estimatedCost.toFixed(4)}`,
+        estimatedEnergySaved: `${(estimatedTokensSaved * kwhPerToken).toFixed(4)} kWh`,
+        formula: "real compounding: N(N+1)/2 vs per-watch reset"
       },
       compliance: {
         allAgentsWithinLimits: working.every(a => a.currentWatch && a.currentWatch.minutesWorked <= a.watchMinutes),
