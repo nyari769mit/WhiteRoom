@@ -356,7 +356,7 @@ class WhiteRoom {
     // WITH WhiteRoom:    tokensPerWatch = avg × callsPerWatch × (callsPerWatch+1) / 2
     //                   tokensWith = (tokensPerWatch × watchCount) + (300 × watchCount)
     // saved = tokensWithout - tokensWith
-    const agentsWithData = agents.filter(a => a.totalTasks > 0 && a.watchCount > 0);
+    const agentsWithData = agents.filter(a => a.totalTasks > 0 && a.watchCount >= 2);
     let estimatedTokensSaved = 0;
     if (agentsWithData.length > 0) {
       agentsWithData.forEach(a => {
@@ -369,6 +369,17 @@ class WhiteRoom {
         const tokensWith = (tokensPerWatch * watches) + (300 * watches);
         estimatedTokensSaved += Math.max(0, tokensWithout - tokensWith);
       });
+    } else if (handoverCount > 0 && totalTokens > 0) {
+      // Fallback: at least one handover happened, estimate savings
+      // from total tokens assuming avg callsPerWatch = totalTasks / max(handoverCount,1)
+      const avgTokens = totalTokens / Math.max(totalTasks, 1);
+      const totalCalls = totalTasks;
+      const watches = handoverCount;
+      const callsPerWatch = totalCalls / watches;
+      const tokensWithout = avgTokens * totalCalls * (totalCalls + 1) / 2;
+      const tokensPerWatch = avgTokens * callsPerWatch * (callsPerWatch + 1) / 2;
+      const tokensWith = (tokensPerWatch * watches) + (300 * watches);
+      estimatedTokensSaved = Math.max(0, tokensWithout - tokensWith);
     }
     const estimatedCost = (estimatedTokensSaved * 0.8 * 0.0000008) + (estimatedTokensSaved * 0.2 * 0.000004);
     const kwhPerToken = 0.0000004;
