@@ -265,6 +265,17 @@ const { URL } = require("url");
               };
               whiteRoom.storeHandoverDoc(fleetId, agentId, handoverDoc);
               console.log(`Auto-handover generated for ${agentId}: ${JSON.stringify(handoverDoc).length} chars`);
+
+              // Detect workflow type and govern accordingly
+              const agentCheck = whiteRoom.checkWatch(fleetId, agentId);
+              if (!agentCheck.pairedWith) {
+                // SINGLE-AGENT MODE: self-handover — compress, rest, auto-restart
+                whiteRoom.initiateSelfHandover(fleetId, agentId);
+                console.log(`[SINGLE-AGENT] Self-handover triggered for ${agentId}`);
+              } else {
+                // PAIRED-FLEET MODE: paired handover handled by initiateHandover API
+                console.log(`[PAIRED-FLEET] Waiting for initiateHandover call for ${agentId} → ${agentCheck.pairedWith}`);
+              }
             }
           } catch(e) {
             console.error("Compression failed:", e.message);
@@ -280,17 +291,29 @@ const { URL } = require("url");
       compressionReq.end();
     }
 
+    // Detect mode from current agent status
+    const postHandoverStatus = whiteRoom.checkWatch(fleetId, agentId);
+    const isSingleAgent = postHandoverStatus.status === "resting" && !postHandoverStatus.pairedWith;
+    const isPaired = !!postHandoverStatus.pairedWith;
+
     return res.status(429).json({
       type: "error",
       error: {
         type: "rate_limit_error",
-        message: "Agent has exceeded watch limit and needs a handover before continuing."
+        message: isSingleAgent
+          ? "Watch limit reached. Self-handover complete — resting now, will auto-restart with compressed context."
+          : "Watch limit reached. Initiate handover to relief agent to continue."
       },
       whiteroom: {
-        reason: "watch_limit_exceeded",
+        reason: isSingleAgent ? "self_handover_complete" : "watch_limit_exceeded",
+        mode: isSingleAgent ? "single-agent" : "paired-fleet",
         handoverGenerated: taskHistory.length > 0,
+        alarmAt: isSingleAgent ? postHandoverStatus.alarmAt : undefined,
+        pairedWith: isPaired ? postHandoverStatus.pairedWith : undefined,
         retrieveWith: { action: "get_handover", fleet_id: fleetId, agent_id: agentId },
-        message: "Call /api/white-room with action=initiate_handover to continue."
+        message: isSingleAgent
+          ? `Auto-restart after rest. Alarm: ${postHandoverStatus.alarmAt}`
+          : "Call /api/white-room with action=initiate_handover to continue."
       }
     });
   }

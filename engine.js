@@ -448,6 +448,32 @@ class WhiteRoom {
     } catch(e) {}
   }
 
+  initiateSelfHandover(fleetId, agentId) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    const agent = fleet.agents[agentId];
+    if (!agent) return { error: `Agent '${agentId}' not found.` };
+    const completedWatch = agent.currentWatch ? { ...agent.currentWatch } : {};
+    agent.status = "resting";
+    agent.restStartedAt = new Date().toISOString();
+    agent.alarmAt = new Date(Date.now() + agent.restMinutes * 60000).toISOString();
+    agent.currentWatch = null;
+    this._audit(fleet, {
+      type: "self_handover",
+      agentId,
+      mode: "single-agent",
+      contextTokens: completedWatch.tokensUsed || 0,
+      contextReduction: `${completedWatch.tokensUsed || 0} tokens → compressed handover doc`
+    });
+    return {
+      success: true,
+      mode: "single-agent",
+      agentId,
+      status: "resting",
+      alarmAt: agent.alarmAt,
+      message: `${agentId} self-handover complete. Resting ${agent.restMinutes} min. Will restart with compressed context.`
+    };
+  }
+
   setFleetKey(fleetId, apiKey) {
     const fleet = this._getOrCreateFleet(fleetId);
     if (!fleet.apiKeyHash) {
