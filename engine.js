@@ -279,13 +279,18 @@ class WhiteRoom {
       receivedHandover: handover.handoverId
     };
 
+    const handoverDoc = fleet.handoverDocs && fleet.handoverDocs[fromAgent];
+    const handoverDocTokens = handoverDoc
+      ? Math.ceil(JSON.stringify(handoverDoc).length / 4)
+      : 300;
     this._audit(fleet, {
       type: "handover",
       from: fromAgent,
       to: toAgent,
       handoverId: handover.handoverId,
       contextTokens: completedWatch.tokensUsed,
-      contextReduction: `${completedWatch.tokensUsed} → ~2000 (context cleared)`
+      handoverDocTokens,
+      contextReduction: `${completedWatch.tokensUsed} → ${handoverDocTokens} tokens (compressed)`
     });
 
     return {
@@ -356,31 +361,12 @@ class WhiteRoom {
     // WITH WhiteRoom:    tokensPerWatch = avg × callsPerWatch × (callsPerWatch+1) / 2
     //                   tokensWith = (tokensPerWatch × watchCount) + (300 × watchCount)
     // saved = tokensWithout - tokensWith
-    const agentsWithData = agents.filter(a => a.totalTasks > 0 && a.watchCount >= 2);
-    let estimatedTokensSaved = 0;
-    if (agentsWithData.length > 0) {
-      agentsWithData.forEach(a => {
-        const totalCalls = a.totalTasks;
-        const watches = a.watchCount;
-        const avgTokens = a.totalTokens / totalCalls;
-        const callsPerWatch = totalCalls / watches;
-        const tokensWithout = avgTokens * totalCalls * (totalCalls + 1) / 2;
-        const tokensPerWatch = avgTokens * callsPerWatch * (callsPerWatch + 1) / 2;
-        const tokensWith = (tokensPerWatch * watches) + (300 * watches);
-        estimatedTokensSaved += Math.max(0, tokensWithout - tokensWith);
-      });
-    } else if (handoverCount > 0 && totalTokens > 0) {
-      // Fallback: at least one handover happened, estimate savings
-      // from total tokens assuming avg callsPerWatch = totalTasks / max(handoverCount,1)
-      const avgTokens = totalTokens / Math.max(totalTasks, 1);
-      const totalCalls = totalTasks;
-      const watches = handoverCount;
-      const callsPerWatch = totalCalls / watches;
-      const tokensWithout = avgTokens * totalCalls * (totalCalls + 1) / 2;
-      const tokensPerWatch = avgTokens * callsPerWatch * (callsPerWatch + 1) / 2;
-      const tokensWith = (tokensPerWatch * watches) + (300 * watches);
-      estimatedTokensSaved = Math.max(0, tokensWithout - tokensWith);
-    }
+    const handoverEvents = fleet.audit.filter(e =>
+      (e.type === "handover" || e.type === "self_handover") && e.contextTokens > 0
+    );
+    const estimatedTokensSaved = handoverEvents.reduce((sum, e) =>
+      sum + Math.max(0, e.contextTokens - (e.handoverDocTokens || 300)), 0
+    );
     const estimatedCost = (estimatedTokensSaved * 0.8 * 0.0000008) + (estimatedTokensSaved * 0.2 * 0.000004);
     const kwhPerToken = 0.0000004;
 
@@ -457,12 +443,17 @@ class WhiteRoom {
     agent.restStartedAt = new Date().toISOString();
     agent.alarmAt = new Date(Date.now() + agent.restMinutes * 60000).toISOString();
     agent.currentWatch = null;
+    const selfHandoverDoc = fleet.handoverDocs && fleet.handoverDocs[agentId];
+    const selfHandoverDocTokens = selfHandoverDoc
+      ? Math.ceil(JSON.stringify(selfHandoverDoc).length / 4)
+      : 300;
     this._audit(fleet, {
       type: "self_handover",
       agentId,
       mode: "single-agent",
       contextTokens: completedWatch.tokensUsed || 0,
-      contextReduction: `${completedWatch.tokensUsed || 0} tokens → compressed handover doc`
+      handoverDocTokens: selfHandoverDocTokens,
+      contextReduction: `${completedWatch.tokensUsed || 0} → ${selfHandoverDocTokens} tokens (compressed)`
     });
     return {
       success: true,
@@ -474,32 +465,7 @@ class WhiteRoom {
     };
   }
 
-  setFleetKey(fleetId, apiKey) {
-    const fleet = this._getOrCreateFleet(fleetId);
-    if (!fleet.apiKeyHash) {
-      const crypto = require("crypto");
-      fleet.apiKeyHash = crypto.createHash("sha256").update(apiKey).digest("hex").slice(0, 16);
-      this._saveFleetKeys();
-    }
-  }
-  getFleetKey(fleetId) {
-    const fleet = this._getOrCreateFleet(fleetId);
-    return fleet.apiKeyHash || null;
-  }
-  hashKey(apiKey) {
-    const crypto = require("crypto");
-    return crypto.createHash("sha256").update(apiKey).digest("hex").slice(0, 16);
-  }
-  setFleetEndpoint(fleetId, endpoint) {
-    const fleet = this._getOrCreateFleet(fleetId);
-    fleet.llmEndpoint = endpoint;
-  }
-  getFleetEndpoint(fleetId) {
-    const fleet = this._getOrCreateFleet(fleetId);
-    return fleet.llmEndpoint || "https://api.anthropic.com";
-  }
-
-
+ 
 setFleetKey(fleetId, apiKey) {
     const fleet = this._getOrCreateFleet(fleetId);
     if (!fleet.apiKeyHash) {
