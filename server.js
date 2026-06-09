@@ -375,7 +375,12 @@ setInterval(() => {
         const alarmTime = new Date(agent.alarmAt).getTime();
         if (now >= alarmTime) {
           whiteRoom.fireAlarm(fleetId, agentId);
-          console.log('Auto-alarm fired: ' + agentId + ' in ' + fleetId);
+          if (!agent.pairedWith) {
+            whiteRoom.startWatch(fleetId, agentId);
+            console.log('Auto-alarm fired, solo agent watch restarted: ' + agentId + ' in ' + fleetId);
+          } else {
+            console.log('Auto-alarm fired: ' + agentId + ' in ' + fleetId);
+          }
         }
       }
     }
