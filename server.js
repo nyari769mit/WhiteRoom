@@ -166,8 +166,26 @@ case "fleet_report": {
 
 const PORT = process.env.PORT || 3000;
 app.post("/v1/messages", async (req, res) => {
-  const agentId = req.headers["x-whiteroom-agent"] || "unknown";
-  const fleetId = req.headers["x-whiteroom-fleet"] || "default";
+  function detectAgentId(body) {
+  if (!body || !body.system) return null;
+  const system = typeof body.system === "string" ? body.system : JSON.stringify(body.system);
+  
+  // Try to extract role name from CrewAI system prompt format
+  const roleMatch = system.match(/your role[:\s]+([^\n\.]+)/i) || 
+                    system.match(/you are[:\s]+([^\n\.]+)/i) ||
+                    system.match(/role[:\s]+([^\n\.]+)/i);
+  if (roleMatch) {
+    return roleMatch[1].trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").slice(0, 30);
+  }
+  
+  // Fallback: stable hash of first 80 chars
+  const crypto = require("crypto");
+  const fingerprint = system.slice(0, 80).trim();
+  return "agent-" + crypto.createHash("md5").update(fingerprint).digest("hex").slice(0, 8);
+}
+
+const agentId = req.headers["x-whiteroom-agent"] || detectAgentId(req.body) || "unknown";
+const fleetId = req.headers["x-whiteroom-fleet"] || "default";
   const apiKey = req.headers["x-api-key"];
 
   if (!apiKey) {
