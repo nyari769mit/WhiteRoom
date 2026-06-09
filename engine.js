@@ -61,9 +61,12 @@ class WhiteRoom {
     return (agent.currentWatch && agent.currentWatch.tasks) ? agent.currentWatch.tasks : [];
   }
 
-  listFleets() {
+  listFleets(apiKey) {
     const result = [];
+    const keyHash = apiKey ? this.hashKey(apiKey) : null;
     for (const [fleetId, fleet] of this.fleets) {
+      // If fleet has a registered key, only show it to that key's owner
+      if (fleet.apiKeyHash && keyHash && fleet.apiKeyHash !== keyHash) continue;
       result.push({
         fleetId,
         agentCount: Object.keys(fleet.agents).length,

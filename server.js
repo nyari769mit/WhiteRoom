@@ -144,7 +144,8 @@ app.post("/api/white-room", (req, res) => {
       }
 
       case "list_fleets": {
-        const result = whiteRoom.listFleets();
+        const listKey = req.headers["x-api-key"] || (req.headers["authorization"] || "").replace("Bearer ", "");
+        const result = whiteRoom.listFleets(listKey);
         return res.json({ fleets: result });
       }
 
