@@ -203,12 +203,11 @@ const fleetId = req.headers["x-whiteroom-fleet"] || "default";
   if (watchStatus.error && watchStatus.error.includes("not found")) {
     whiteRoom.registerAgent(fleetId, agentId, "worker");
     whiteRoom.startWatch(fleetId, agentId);
-  } else if (watchStatus.status === "alarm") {
-    // Agent rested — fire alarm and inject handover doc into next request
-    whiteRoom.fireAlarm(fleetId, agentId);
-    const handoverDoc = whiteRoom.getHandoverDoc(fleetId, agentId);
-    if (handoverDoc && req.body.messages) {
-      const handoverContext = `[HANDOVER CONTEXT - Previous session summary]\n${JSON.stringify(handoverDoc, null, 2)}\n[END HANDOVER CONTEXT]\n\nContinue from where the previous session left off.`;
+  } else if (watchStatus.status === "working") {
+    // Inject pending handover doc on first call after solo agent restart
+    const pendingDoc = whiteRoom.getHandoverDoc(fleetId, agentId);
+    if (pendingDoc && req.body.messages) {
+      const handoverContext = `[HANDOVER CONTEXT - Previous session summary]\n${JSON.stringify(pendingDoc, null, 2)}\n[END HANDOVER CONTEXT]\n\nContinue from where the previous session left off.`;
       req.body.messages = [{ role: "user", content: handoverContext }, ...req.body.messages];
       whiteRoom.storeHandoverDoc(fleetId, agentId, null); // clear after injection
     }
