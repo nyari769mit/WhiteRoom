@@ -110,10 +110,10 @@ class WhiteRoom {
     const agentIds = Object.keys(fleet.agents);
     const pairs = [];
     for (let i = 0; i < agentIds.length - 1; i += 2) {
-      const a = agentIds[i];
-      const b = agentIds[i + 1];
-      this.pairAgents(fleetId, a, b);
-      pairs.push({ agentA: a, agentB: b });
+      const agentA = agentIds[i];
+      const agentB = agentIds[i + 1];
+      this.pairAgents(fleetId, agentA, agentB);
+      pairs.push({ agentA, agentB });
     }
     const solo = agentIds.length % 2 !== 0 ? agentIds[agentIds.length - 1] : null;
     return { success: true, pairs, solo: solo || null };
