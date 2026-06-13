@@ -121,11 +121,14 @@ class WhiteRoom {
 
   // ─── Pair two agents for watch rotation ───────────────────
   pairAgents(fleetId, agentA, agentB) {
-
+    const fleet = this._getOrCreateFleet(fleetId);
+    const a = fleet.agents[agentA];
+    const b = fleet.agents[agentB];
+    if (!a) return { error: `Agent '${agentA}' not found.` };
+    if (!b) return { error: `Agent '${agentB}' not found.` };
     a.pairedWith = agentB;
     b.pairedWith = agentA;
     fleet.pairs[`${agentA}:${agentB}`] = { agentA, agentB, createdAt: new Date().toISOString() };
-
     this._audit(fleet, { type: "pair", agentA, agentB });
     return { success: true, pair: { agentA, agentB } };
   }
