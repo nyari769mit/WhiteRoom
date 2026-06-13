@@ -84,6 +84,11 @@ app.post("/api/white-room", (req, res) => {
         return res.json(result);
       }
 
+      case "auto_pair": {
+        const result = whiteRoom.autoPairAgents(fleetId);
+        return res.json(result);
+      }
+
       case "start_watch": {
         if (!agent_id) return res.status(400).json({ error: "agent_id is required." });
         const result = whiteRoom.startWatch(fleetId, agent_id);

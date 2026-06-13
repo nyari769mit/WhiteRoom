@@ -104,14 +104,23 @@ class WhiteRoom {
     this._audit(fleet, { type: "register", agentId, role, watchMinutes, restMinutes });
     return { success: true, agent: fleet.agents[agentId] };
   }
+// ─── Auto-pair all agents in registration order ────────────
+  autoPairAgents(fleetId) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    const agentIds = Object.keys(fleet.agents);
+    const pairs = [];
+    for (let i = 0; i < agentIds.length - 1; i += 2) {
+      const a = agentIds[i];
+      const b = agentIds[i + 1];
+      this.pairAgents(fleetId, a, b);
+      pairs.push({ agentA: a, agentB: b });
+    }
+    const solo = agentIds.length % 2 !== 0 ? agentIds[agentIds.length - 1] : null;
+    return { success: true, pairs, solo: solo || null };
+  }
 
   // ─── Pair two agents for watch rotation ───────────────────
   pairAgents(fleetId, agentA, agentB) {
-    const fleet = this._getOrCreateFleet(fleetId);
-    const a = fleet.agents[agentA];
-    const b = fleet.agents[agentB];
-    if (!a) return { error: `Agent '${agentA}' not found.` };
-    if (!b) return { error: `Agent '${agentB}' not found.` };
 
     a.pairedWith = agentB;
     b.pairedWith = agentA;
