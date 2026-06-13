@@ -208,6 +208,18 @@ const fleetId = req.headers["x-whiteroom-fleet"] || "default";
   if (watchStatus.error && watchStatus.error.includes("not found")) {
     whiteRoom.registerAgent(fleetId, agentId, "worker");
     whiteRoom.startWatch(fleetId, agentId);
+  } else if (watchStatus.status === "idle") {
+    // Agent is idle — check if its pair has a pending handover doc
+    const agentObj = whiteRoom.fleets.get(fleetId)?.agents[agentId];
+    const pairedId = agentObj?.pairedWith;
+    const pendingDoc = pairedId ? whiteRoom.getHandoverDoc(fleetId, pairedId) : null;
+    if (pendingDoc && req.body.messages) {
+      const handoverContext = `[HANDOVER CONTEXT - Previous session summary]\n${JSON.stringify(pendingDoc, null, 2)}\n[END HANDOVER CONTEXT]\n\nContinue from where the previous agent left off.`;
+      req.body.messages = [{ role: "user", content: handoverContext }, ...req.body.messages];
+      whiteRoom.storeHandoverDoc(fleetId, pairedId, null); // clear after injection
+      console.log(`[PAIRED] Handover doc injected for ${agentId} from ${pairedId}`);
+    }
+    whiteRoom.startWatch(fleetId, agentId);
   } else if (watchStatus.status === "working") {
     // Inject pending handover doc on first call after solo agent restart
     const pendingDoc = whiteRoom.getHandoverDoc(fleetId, agentId);
@@ -234,7 +246,14 @@ const fleetId = req.headers["x-whiteroom-fleet"] || "default";
     // Auto-generate compression handover before blocking
     const taskHistory = whiteRoom.getTaskHistory(fleetId, agentId);
     const existingDoc = whiteRoom.getHandoverDoc(fleetId, agentId);
-    
+    const agentObj = whiteRoom.fleets.get(fleetId) && whiteRoom.fleets.get(fleetId).agents[agentId];
+
+    // Immediately move solo agents to resting — don't wait for async compression
+    if (!agentObj?.pairedWith && watchStatus.status !== "resting") {
+      whiteRoom.initiateSelfHandover(fleetId, agentId);
+      console.log(`[SOLO] ${agentId} immediately moved to resting — compression running in background`);
+    }
+
     if (taskHistory.length > 0 && !existingDoc) {
       // Build compression prompt
       const compressionPrompt = `You are summarizing an AI agent's work session for handover.
