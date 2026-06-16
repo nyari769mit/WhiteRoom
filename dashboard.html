@@ -309,6 +309,14 @@ function getFleet() { return document.getElementById("fleet-sel").value; }
 function onFleetChange() {
   logEvents.clear(); logEntries = []; agentState = {};
   renderLog();
+  document.getElementById("agents-grid").innerHTML =
+    '<div style="color:#475569;text-align:center;padding:40px 0;font-size:13px;letter-spacing:.05em">LOADING FLEET...</div>';
+  document.getElementById("total-tasks").textContent = "0";
+  document.getElementById("total-tokens").textContent = "0.0K";
+  document.getElementById("tokens-saved").textContent = "0K";
+  document.getElementById("cost-saved").textContent = "$0.0000";
+  document.getElementById("energy-saved").textContent = "0.0000 kWh";
+  document.getElementById("handovers").textContent = "0";
 }
 
 function populateFleets(fleets) {
