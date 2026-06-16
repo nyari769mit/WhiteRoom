@@ -5,7 +5,7 @@ const https = require("https");
 const { URL } = require("url");
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 app.use(express.static(__dirname));
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -208,19 +208,28 @@ const fleetId = req.headers["x-whiteroom-fleet"] || "default";
   if (watchStatus.error && watchStatus.error.includes("not found")) {
     whiteRoom.registerAgent(fleetId, agentId, "worker");
     whiteRoom.startWatch(fleetId, agentId);
-  } else if (watchStatus.status === "idle") {
-    // Agent is idle — check if its pair has a pending handover doc
+ } else if (watchStatus.status === "idle") {
     const agentObj = whiteRoom.fleets.get(fleetId)?.agents[agentId];
     const pairedId = agentObj?.pairedWith;
-    const pendingDoc = pairedId ? whiteRoom.getHandoverDoc(fleetId, pairedId) : null;
+    // Check own doc (solo) or paired agent's doc
+    const pendingDoc = whiteRoom.getHandoverDoc(fleetId, agentId) || 
+                       (pairedId ? whiteRoom.getHandoverDoc(fleetId, pairedId) : null);
+    const docOwnerId = whiteRoom.getHandoverDoc(fleetId, agentId) ? agentId : pairedId;
     if (pendingDoc && req.body.messages) {
-      const handoverContext = `[HANDOVER CONTEXT - Previous session summary]\n${JSON.stringify(pendingDoc, null, 2)}\n[END HANDOVER CONTEXT]\n\nContinue from where the previous agent left off.`;
-      req.body.messages = [{ role: "user", content: handoverContext }, ...req.body.messages];
-      whiteRoom.storeHandoverDoc(fleetId, pairedId, null); // clear after injection
-      console.log(`[PAIRED] Handover doc injected for ${agentId} from ${pairedId}`);
+      // Replace full context with compressed handover + last 2 turns only
+      const systemPrompt = req.body.system;
+      const recentMessages = req.body.messages.slice(-4);
+      req.body.messages = [
+        { role: "user", content: `[COMPRESSED CONTEXT FROM PREVIOUS SESSION]\n${JSON.stringify(pendingDoc, null, 2)}\n[END COMPRESSED CONTEXT]\n\nContinue from where the previous session left off.` },
+        { role: "assistant", content: "Understood. I have the context from the previous session and will continue from where we left off." },
+        ...recentMessages
+      ];
+      whiteRoom.storeHandoverDoc(fleetId, docOwnerId, null);
+      console.log(`[HANDOVER] Context compressed for ${agentId} — full history replaced with handover doc + last 2 turns`);
     }
     whiteRoom.startWatch(fleetId, agentId);
-  } else if (watchStatus.status === "working") {
+ 
+  } else if (watchStatus.status === "working" && !watchStatus.needsHandover) {
     // Inject pending handover doc on first call after solo agent restart
     const pendingDoc = whiteRoom.getHandoverDoc(fleetId, agentId);
     if (pendingDoc && req.body.messages) {
@@ -229,19 +238,28 @@ const fleetId = req.headers["x-whiteroom-fleet"] || "default";
       whiteRoom.storeHandoverDoc(fleetId, agentId, null); // clear after injection
     }
   } else if (watchStatus.status === "resting") {
-    return res.status(429).json({
-      type: "error",
-      error: {
-        type: "rate_limit_error",
-        message: "Agent is resting in the White Room. Rest remaining: " + watchStatus.restRemaining + ". Alarm at: " + watchStatus.alarmAt
-      },
-      whiteroom: {
-        reason: "resting",
-        restRemaining: watchStatus.restRemaining,
-        alarmAt: watchStatus.alarmAt,
-        message: "This agent is in mandatory rest period. Call /api/white-room with action=fire_alarm to wake it."
-      }
-    });
+    // Auto-wake if rest period is already over
+    const agentObj = whiteRoom.fleets.get(fleetId)?.agents[agentId];
+    if (agentObj?.alarmAt && new Date() >= new Date(agentObj.alarmAt)) {
+      whiteRoom.fireAlarm(fleetId, agentId);
+      whiteRoom.startWatch(fleetId, agentId);
+      // Fall through to proxy the request normally
+    } else {
+      return res.status(429).json({
+        type: "error",
+        error: {
+          type: "rate_limit_error",
+          message: "Agent is resting in the White Room. Rest remaining: " + watchStatus.restRemaining + ". Alarm at: " + watchStatus.alarmAt
+        },
+        whiteroom: {
+          reason: "resting",
+          agentId: agentId,
+          restRemaining: watchStatus.restRemaining,
+          alarmAt: watchStatus.alarmAt,
+          message: "This agent is in mandatory rest period. Call /api/white-room with action=fire_alarm to wake it."
+        }
+      });
+    }
   } else if (watchStatus.needsHandover) {
     // Auto-generate compression handover before blocking
     const taskHistory = whiteRoom.getTaskHistory(fleetId, agentId);
@@ -264,8 +282,17 @@ Output valid JSON only, no other text:
   "decisions": [{"what": "...", "why": "...", "final": true}],
   "state": "current state of work in one paragraph",
   "pending": [{"task": "...", "priority": "HIGH|NORMAL|LOW"}],
-  "warnings": ["critical things not to miss"]
+  "warnings": ["critical things not to miss"],
+  "exact_data": {
+    "numbers": ["extract all exact figures, amounts, counts, percentages"],
+    "urls": ["extract all URLs, endpoints, links referenced"],
+    "names": ["extract all proper names, company names, contact names"],
+    "ids": ["extract all IDs, reference numbers, codes, keys"]
+  }
 }
+
+Be exhaustive with exact_data — these values must be preserved verbatim.
+Do not paraphrase numbers, URLs, names or IDs — copy them exactly as they appear.
 
 Task history:
 ${JSON.stringify(taskHistory.slice(-20), null, 2)}`;
@@ -347,8 +374,8 @@ const { URL } = require("url");
           : "Watch limit reached. Initiate handover to relief agent to continue."
       },
       whiteroom: {
-        reason: isSingleAgent ? "self_handover_complete" : "watch_limit_exceeded",
-        mode: isSingleAgent ? "single-agent" : "paired-fleet",
+        reason: "watch_limit_exceeded",
+        agentId: agentId,
         handoverGenerated: taskHistory.length > 0,
         alarmAt: isSingleAgent ? postHandoverStatus.alarmAt : undefined,
         pairedWith: isPaired ? postHandoverStatus.pairedWith : undefined,
