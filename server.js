@@ -207,7 +207,17 @@ const fleetId = req.headers["x-whiteroom-fleet"] || "default";
   // If agent doesn't exist, register it on the fly
   if (watchStatus.error && watchStatus.error.includes("not found")) {
     whiteRoom.registerAgent(fleetId, agentId, "worker");
-    whiteRoom.startWatch(fleetId, agentId);
+    // Auto-pair with existing agents in the fleet before starting
+    whiteRoom.autoPairAgents(fleetId);
+    // Only start watch if paired partner isn't already working
+    const agentObj = whiteRoom.fleets.get(fleetId)?.agents[agentId];
+    const pairedId = agentObj?.pairedWith;
+    const pairedAgent = pairedId ? whiteRoom.fleets.get(fleetId)?.agents[pairedId] : null;
+    if (!pairedAgent || pairedAgent.status !== "working") {
+      whiteRoom.startWatch(fleetId, agentId);
+    } else {
+      console.log(`[PAIRED] ${agentId} registered but staying idle — partner ${pairedId} is on watch`);
+    }
  } else if (watchStatus.status === "idle") {
     const agentObj = whiteRoom.fleets.get(fleetId)?.agents[agentId];
     const pairedId = agentObj?.pairedWith;
