@@ -66,7 +66,7 @@ class WhiteRoom {
     const keyHash = apiKey ? this.hashKey(apiKey) : null;
     for (const [fleetId, fleet] of this.fleets) {
       // If fleet has a registered key, only show it to that key's owner
-      if (fleet.apiKeyHash && keyHash && fleet.apiKeyHash !== keyHash) continue;
+      if (fleet.apiKeyHash && (!keyHash || fleet.apiKeyHash !== keyHash)) continue;
       result.push({
         fleetId,
         agentCount: Object.keys(fleet.agents).length,
@@ -140,6 +140,17 @@ class WhiteRoom {
     if (!agent) return { error: `Agent '${agentId}' not found.` };
     if (agent.status === "resting") return { error: `Agent '${agentId}' is resting. Alarm at ${agent.alarmAt}.` };
     if (agent.status === "working") return { error: `Agent '${agentId}' is already on watch.` };
+    if (agent.status === "handover_out") return { error: `Agent '${agentId}' is mid-handover. Wait for it to complete.`, waitingOn: agentId };
+
+    if (agent.pairedWith) {
+      const partner = fleet.agents[agent.pairedWith];
+      if (partner && (partner.status === "working" || partner.status === "handover_out")) {
+        return {
+          error: `Agent '${agentId}' cannot start — partner '${agent.pairedWith}' is on watch (status: ${partner.status}).`,
+          waitingOn: agent.pairedWith
+        };
+      }
+    }
 
     agent.status = "working";
     agent.watchCount++;
@@ -245,6 +256,22 @@ class WhiteRoom {
       tokensUsed: agent.currentWatch.tokensUsed,
       needsHandover: remaining <= 0
     };
+  }
+
+  // ─── Begin handover pause ──────────────────────────────────
+  // Fired synchronously the instant the watch limit is hit, before
+  // compression runs. While an agent is "handover_out": it cannot be
+  // restarted, and if it has a partner, the partner cannot start either
+  // (see startWatch). This removes the timing race — nothing depends on
+  // compression finishing before or after any other check.
+  beginHandover(fleetId, agentId) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    const agent = fleet.agents[agentId];
+    if (!agent) return { error: `Agent '${agentId}' not found.` };
+    if (agent.status !== "working") return { error: `Agent '${agentId}' is not on watch (status: ${agent.status}).` };
+    agent.status = "handover_out";
+    this._audit(fleet, { type: "handover_begin", agentId, watchNumber: agent.currentWatch?.watchNumber });
+    return { success: true, agentId, status: "handover_out" };
   }
 
   // ─── Initiate handover ────────────────────────────────────
@@ -447,6 +474,40 @@ class WhiteRoom {
       }
       console.log("Fleet keys loaded from disk:", Object.keys(keys).join(", "));
     } catch(e) {}
+  }
+
+  // ─── Complete handover to paired partner ──────────────────
+  // Moves the outgoing agent to idle — the same waiting state its
+  // partner was in before this watch began — so the next cycle is
+  // symmetric. The partner's own next startWatch call picks up the
+  // stored handover doc; no separate "claim" action is needed.
+  completePairedHandover(fleetId, agentId) {
+    const fleet = this._getOrCreateFleet(fleetId);
+    const agent = fleet.agents[agentId];
+    if (!agent) return { error: `Agent '${agentId}' not found.` };
+    const completedWatch = agent.currentWatch ? { ...agent.currentWatch } : {};
+    agent.status = "idle";
+    agent.currentWatch = null;
+    const handoverDoc = fleet.handoverDocs && fleet.handoverDocs[agentId];
+    const handoverDocTokens = handoverDoc
+      ? Math.ceil(JSON.stringify(handoverDoc).length / 4)
+      : 300;
+    this._audit(fleet, {
+      type: "paired_handover",
+      agentId,
+      pairedWith: agent.pairedWith,
+      contextTokens: completedWatch.tokensUsed || 0,
+      handoverDocTokens,
+      contextReduction: `${completedWatch.tokensUsed || 0} → ${handoverDocTokens} tokens (compressed)`
+    });
+    return {
+      success: true,
+      mode: "paired",
+      agentId,
+      status: "idle",
+      pairedWith: agent.pairedWith,
+      message: `${agentId} handed over to ${agent.pairedWith}. Waiting for the next cycle.`
+    };
   }
 
   initiateSelfHandover(fleetId, agentId) {

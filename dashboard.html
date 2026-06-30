@@ -204,13 +204,13 @@ input { font-family: inherit; }
 </div><!-- end dashboard -->
 
 <script>
-const WHITEROOM = "https://whiteroom-m4j4.onrender.com";
+const WHITEROOM = window.location.origin;
 const COST_PER_1K = 0.003;
 const ENERGY_PER_1M = 0.4;
 const POLL_MS = 10000;
 
 let apiKey = null;
-let running = false, pollTimer = null;
+let running = false, pollTimer = null, fleetTimer = null;
 let logEvents = new Set(), logEntries = [], agentState = {};
 
 const SC = {
@@ -218,6 +218,7 @@ const SC = {
   overtime: { border:"#f59e0b", badgeBg:"#451a03", badgeTx:"#fbbf24", badgeBd:"#f59e0b", bar:"#f59e0b" },
   resting:  { border:"#0ea5e9", badgeBg:"#0c4a6e", badgeTx:"#38bdf8", badgeBd:"#0ea5e9", bar:"#0ea5e9" },
   idle:     { border:"#475569", badgeBg:"#1e293b", badgeTx:"#94a3b8", badgeBd:"#475569", bar:"#475569" },
+  handover_out: { border:"#a78bfa", badgeBg:"#2e1065", badgeTx:"#c4b5fd", badgeBd:"#a78bfa", bar:"#a78bfa" },
 };
 const LOG_COLORS = { task:"#22c55e", handover:"#818cf8", rest:"#0ea5e9", alarm:"#f43f5e", info:"#334155" };
 
@@ -229,6 +230,10 @@ const ROLE_MAP = {
 };
 
 function getRole(id) { return ROLE_MAP[id] || id; }
+
+function esc(str) {
+  return String(str==null?"":str).replace(/[&<>"'`]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;","`":"&#96;"}[c]));
+}
 
 async function api(body, key) {
   const k = key || apiKey;
@@ -311,12 +316,12 @@ function onFleetChange() {
   renderLog();
   document.getElementById("agents-grid").innerHTML =
     '<div style="color:#475569;text-align:center;padding:40px 0;font-size:13px;letter-spacing:.05em">LOADING FLEET...</div>';
-  document.getElementById("total-tasks").textContent = "0";
-  document.getElementById("total-tokens").textContent = "0.0K";
-  document.getElementById("tokens-saved").textContent = "0K";
-  document.getElementById("cost-saved").textContent = "$0.0000";
-  document.getElementById("energy-saved").textContent = "0.0000 kWh";
-  document.getElementById("handovers").textContent = "0";
+  document.getElementById("b-tasks").textContent = "0";
+  document.getElementById("b-tokens").textContent = "0.0K";
+  document.getElementById("b-saved").textContent = "0K";
+  document.getElementById("b-cost").textContent = "$0.0000";
+  document.getElementById("b-energy").textContent = "0.0000 kWh";
+  document.getElementById("b-handovers").textContent = "0";
 }
 
 function populateFleets(fleets) {
@@ -352,12 +357,13 @@ function startPolling() {
   document.getElementById("btn-run").className = "btn btn-red";
   poll();
   pollTimer = setInterval(poll, POLL_MS);
-  setInterval(loadFleets, 30000);
+  fleetTimer = setInterval(loadFleets, 30000);
 }
 
 function stopPolling() {
   running = false;
   clearInterval(pollTimer);
+  clearInterval(fleetTimer);
   document.getElementById("dot").className = "dot";
   document.getElementById("btn-run").textContent = "RUN LIVE";
   document.getElementById("btn-run").className = "btn btn-green";
@@ -402,7 +408,7 @@ async function poll() {
         logEvents.add(evt.id);
         const type = evt.type==="task_complete"?"task":evt.type.includes("handover")?"handover":evt.type.includes("rest")||evt.type==="watch_end"?"rest":evt.type==="alarm"||evt.type==="watch_start"?"alarm":"info";
         const msg = evt.type==="task_complete"
-          ? `✓ ${evt.agentId.toUpperCase()}: task done | ${(evt.tokensUsed/1000).toFixed(1)}K tokens | ${evt.remaining}min left`
+          ? `✓ ${evt.agentId.toUpperCase()}: task done | ${(evt.tokensUsed/1000).toFixed(1)}K tokens | ${(evt.tokensRemaining/1000).toFixed(1)}K tokens left`
           : evt.type.includes("handover") ? `🔄 HANDOVER: ${evt.agentId.toUpperCase()} → relief`
           : evt.type==="watch_start" ? `▶ ${evt.agentId.toUpperCase()} watch started`
           : evt.type==="register" ? `📋 ${evt.agentId.toUpperCase()} registered (${evt.role})`
@@ -461,8 +467,8 @@ function renderAgents(agents, handoverDocs) {
     html += `<div class="agent-card" style="border-left-color:${sc.border}">
       <div class="agent-header">
         <div>
-          <div class="agent-name">${d.id.toUpperCase()}</div>
-          <div class="agent-role">${getRole(d.id)}</div>
+          <div class="agent-name">${esc(d.id.toUpperCase())}</div>
+          <div class="agent-role">${esc(getRole(d.id))}</div>
           <div class="agent-meta">Watch #${d.watchNumber||1} · ${d.tasksCompleted||0} tasks · ${d.minutesWorked||0}min worked</div>
         </div>
         <span class="badge" style="background:${sc.badgeBg};color:${sc.badgeTx};border:1px solid ${sc.badgeBd}">${status.toUpperCase()}</span>
@@ -483,9 +489,9 @@ function renderAgents(agents, handoverDocs) {
     if (hdoc) {
       html += `<div class="handover-panel">
         <div class="handover-title">🔄 HANDOVER DOCUMENT — COMPRESSED CONTEXT</div>`;
-      if (hdoc.state) html += `<div class="handover-section">STATE: <span class="handover-content">${hdoc.state.slice(0,120)}...</span></div>`;
-      if (hdoc.pending && hdoc.pending.length) html += `<div class="handover-section">PENDING: <span class="handover-content">${hdoc.pending.map(p=>p.task).slice(0,2).join(", ")}</span></div>`;
-      if (hdoc.warnings && hdoc.warnings.length) html += `<div class="handover-section">⚠ ${hdoc.warnings[0].slice(0,100)}</div>`;
+      if (hdoc.state) html += `<div class="handover-section">STATE: <span class="handover-content">${esc(hdoc.state.slice(0,120))}...</span></div>`;
+      if (hdoc.pending && hdoc.pending.length) html += `<div class="handover-section">PENDING: <span class="handover-content">${esc(hdoc.pending.map(p=>p.task).slice(0,2).join(", "))}</span></div>`;
+      if (hdoc.warnings && hdoc.warnings.length) html += `<div class="handover-section">⚠ ${esc(hdoc.warnings[0].slice(0,100))}</div>`;
       if (hdoc.watch_summary) html += `<div class="handover-section">COMPRESSED: ${hdoc.watch_summary.tasks_completed} tasks, ${(hdoc.watch_summary.tokens_used/1000).toFixed(1)}K tokens → summary</div>`;
       html += `</div>`;
     }
@@ -498,7 +504,7 @@ function renderAgents(agents, handoverDocs) {
 function renderLog() {
   const el = document.getElementById("log-body");
   if (!logEntries.length) { el.innerHTML = '<div class="log-empty">No events yet</div>'; return; }
-  el.innerHTML = logEntries.map(e=>`<div class="log-entry" style="border-left-color:${e.color}"><div class="log-time">${e.time}</div><div class="log-msg">${e.msg}</div></div>`).join("");
+  el.innerHTML = logEntries.map(e=>`<div class="log-entry" style="border-left-color:${e.color}"><div class="log-time">${e.time}</div><div class="log-msg">${esc(e.msg)}</div></div>`).join("");
   document.getElementById("log-count").textContent = logEntries.length + " events";
 }
 </script>
