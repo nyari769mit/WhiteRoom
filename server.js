@@ -9,7 +9,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.static(__dirname));
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Headers", "Content-Type, x-api-key, Authorization");
   if (req.method === "OPTIONS") return res.sendStatus(200);
   next();
 });
@@ -45,11 +45,11 @@ app.post("/api/white-room", (req, res) => {
 
 
     const requestKey = req.headers["x-api-key"] || (req.headers["authorization"] || "").replace("Bearer ", "");
-    const sensitiveActions = ["get_handover", "generate_handover", "store_handover", "fleet_report", "check_watch", "initiate_handover", "fire_alarm"];
-    if (sensitiveActions.includes(action) && requestKey) {
+    const sensitiveActions = ["register_agent", "get_handover", "generate_handover", "store_handover", "fleet_report", "check_watch", "initiate_handover", "fire_alarm"];
+    if (sensitiveActions.includes(action)) {
       const fleetKeyHash = whiteRoom.getFleetKey(fleetId);
       if (fleetKeyHash) {
-        const requestKeyHash = whiteRoom.hashKey(requestKey);
+        const requestKeyHash = requestKey ? whiteRoom.hashKey(requestKey) : null;
         if (requestKeyHash !== fleetKeyHash) {
           return res.status(401).json({ error: "Unauthorized. Use the same API key that registered this fleet." });
         }
@@ -209,16 +209,29 @@ const fleetId = req.headers["x-whiteroom-fleet"] || "default";
     whiteRoom.registerAgent(fleetId, agentId, "worker");
     // Auto-pair with existing agents in the fleet before starting
     whiteRoom.autoPairAgents(fleetId);
-    // Only start watch if paired partner isn't already working
-    const agentObj = whiteRoom.fleets.get(fleetId)?.agents[agentId];
-    const pairedId = agentObj?.pairedWith;
-    const pairedAgent = pairedId ? whiteRoom.fleets.get(fleetId)?.agents[pairedId] : null;
-    if (!pairedAgent || pairedAgent.status !== "working") {
-      whiteRoom.startWatch(fleetId, agentId);
-    } else {
-      console.log(`[PAIRED] ${agentId} registered but staying idle — partner ${pairedId} is on watch`);
+    // startWatch itself enforces the partner gate now — if the partner is
+    // on watch or mid-handover, this just stays idle until its turn.
+    const startResult = whiteRoom.startWatch(fleetId, agentId);
+    if (startResult.error) {
+      console.log(`[PAIRED] ${agentId} registered but staying idle — ${startResult.error}`);
     }
  } else if (watchStatus.status === "idle") {
+    const startResult = whiteRoom.startWatch(fleetId, agentId);
+    if (startResult.error) {
+      // Partner is still working or mid-handover — wait this turn rather
+      // than proxying the request through ungoverned.
+      return res.status(429).json({
+        type: "error",
+        error: { type: "rate_limit_error", message: startResult.error },
+        whiteroom: {
+          reason: "waiting_for_partner",
+          agentId: agentId,
+          waitingOn: startResult.waitingOn,
+          message: "Partner is still on watch or mid-handover. Retry shortly."
+        }
+      });
+    }
+
     const agentObj = whiteRoom.fleets.get(fleetId)?.agents[agentId];
     const pairedId = agentObj?.pairedWith;
     // Check own doc (solo) or paired agent's doc
@@ -237,7 +250,6 @@ const fleetId = req.headers["x-whiteroom-fleet"] || "default";
       whiteRoom.storeHandoverDoc(fleetId, docOwnerId, null);
       console.log(`[HANDOVER] Context compressed for ${agentId} — full history replaced with handover doc + last 2 turns`);
     }
-    whiteRoom.startWatch(fleetId, agentId);
  
   } else if (watchStatus.status === "working" && !watchStatus.needsHandover) {
     // Inject pending handover doc on first call after solo agent restart
@@ -247,6 +259,19 @@ const fleetId = req.headers["x-whiteroom-fleet"] || "default";
       req.body.messages = [{ role: "user", content: handoverContext }, ...req.body.messages];
       whiteRoom.storeHandoverDoc(fleetId, agentId, null); // clear after injection
     }
+  } else if (watchStatus.status === "handover_out") {
+    return res.status(429).json({
+      type: "error",
+      error: {
+        type: "rate_limit_error",
+        message: "Agent is mid-handover. Compressing context — try again shortly."
+      },
+      whiteroom: {
+        reason: "handover_in_progress",
+        agentId: agentId,
+        message: "Handover in progress. Will be idle/resting shortly with the compressed doc ready."
+      }
+    });
   } else if (watchStatus.status === "resting") {
     // Auto-wake if rest period is already over
     const agentObj = whiteRoom.fleets.get(fleetId)?.agents[agentId];
@@ -274,13 +299,33 @@ const fleetId = req.headers["x-whiteroom-fleet"] || "default";
     // Auto-generate compression handover before blocking
     const taskHistory = whiteRoom.getTaskHistory(fleetId, agentId);
     const existingDoc = whiteRoom.getHandoverDoc(fleetId, agentId);
-    const agentObj = whiteRoom.fleets.get(fleetId) && whiteRoom.fleets.get(fleetId).agents[agentId];
 
-    // Immediately move solo agents to resting — don't wait for async compression
-    if (!agentObj?.pairedWith && watchStatus.status !== "resting") {
-      whiteRoom.initiateSelfHandover(fleetId, agentId);
-      console.log(`[SOLO] ${agentId} immediately moved to resting — compression running in background`);
+    // Pause immediately — solo or paired alike — so nothing (the agent
+    // itself, or its partner) can start a new watch while compression runs.
+    // This is the actual lock; startWatch enforces it on the other end.
+    if (watchStatus.status === "working") {
+      whiteRoom.beginHandover(fleetId, agentId);
+      console.log(`[HANDOVER] ${agentId} paused (handover_out) — compression running in background`);
     }
+
+    const completeHandoverPause = (fid, aid) => {
+      const liveAgentObj = whiteRoom.fleets.get(fid) && whiteRoom.fleets.get(fid).agents[aid];
+      if (liveAgentObj?.status !== "handover_out") {
+        console.log(`[HANDOVER] ${aid} status changed before completion (${liveAgentObj?.status}) — skipping`);
+        return;
+      }
+      if (!liveAgentObj.pairedWith) {
+        // SOLO: compress, rest, auto-restart with the new doc
+        whiteRoom.initiateSelfHandover(fid, aid);
+        console.log(`[SOLO] Self-handover complete for ${aid}`);
+      } else {
+        // PAIRED: hand the doc off, go idle — the same state the
+        // partner was in before this watch began. Partner's own next
+        // call picks the doc up via startWatch; no separate claim step.
+        whiteRoom.completePairedHandover(fid, aid);
+        console.log(`[PAIRED] ${aid} handed over to ${liveAgentObj.pairedWith} — now idle`);
+      }
+    };
 
     if (taskHistory.length > 0 && !existingDoc) {
       // Build compression prompt
@@ -344,18 +389,8 @@ const { URL } = require("url");
               };
               whiteRoom.storeHandoverDoc(fleetId, agentId, handoverDoc);
               console.log(`Auto-handover generated for ${agentId}: ${JSON.stringify(handoverDoc).length} chars`);
-
-              // Detect workflow type and govern accordingly
-              const agentCheck = whiteRoom.checkWatch(fleetId, agentId);
-              if (!agentCheck.pairedWith) {
-                // SINGLE-AGENT MODE: self-handover — compress, rest, auto-restart
-                whiteRoom.initiateSelfHandover(fleetId, agentId);
-                console.log(`[SINGLE-AGENT] Self-handover triggered for ${agentId}`);
-              } else {
-                // PAIRED-FLEET MODE: paired handover handled by initiateHandover API
-                console.log(`[PAIRED-FLEET] Waiting for initiateHandover call for ${agentId} → ${agentCheck.pairedWith}`);
-              }
             }
+            completeHandoverPause(fleetId, agentId);
           } catch(e) {
             console.error("Compression failed:", e.message);
             whiteRoom.storeHandoverDoc(fleetId, agentId, { 
@@ -363,36 +398,44 @@ const { URL } = require("url");
               generated_at: new Date().toISOString(),
               watch_summary: { tasks_completed: taskHistory.length }
             });
+            // Don't leave the agent stuck in handover_out if compression
+            // failed — complete the pause anyway with whatever doc exists,
+            // so the cycle continues instead of stalling forever.
+            completeHandoverPause(fleetId, agentId);
           }
         });
       });
       compressionReq.write(compressionBody);
       compressionReq.end();
+    } else if (watchStatus.status === "working") {
+      // No compression needed (no tasks yet, or a doc already exists) —
+      // complete the pause right away with whatever doc is on hand.
+      completeHandoverPause(fleetId, agentId);
     }
 
-    // Detect mode from current agent status
-    const postHandoverStatus = whiteRoom.checkWatch(fleetId, agentId);
-    const isSingleAgent = postHandoverStatus.status === "resting" && !postHandoverStatus.pairedWith;
-    const isPaired = !!postHandoverStatus.pairedWith;
+    // Detect mode from the live agent object — checkWatch's non-working
+    // branches never include pairedWith, which is the same gap Bug 2 hit.
+    const liveAgent = whiteRoom.fleets.get(fleetId) && whiteRoom.fleets.get(fleetId).agents[agentId];
+    const isPaired = !!liveAgent?.pairedWith;
 
     return res.status(429).json({
       type: "error",
       error: {
         type: "rate_limit_error",
-        message: isSingleAgent
-          ? "Watch limit reached. Self-handover complete — resting now, will auto-restart with compressed context."
-          : "Watch limit reached. Initiate handover to relief agent to continue."
+        message: isPaired
+          ? "Watch limit reached. Compressing context — relief agent will pick up automatically once ready."
+          : "Watch limit reached. Compressing context — will rest and auto-restart with compressed context."
       },
       whiteroom: {
         reason: "watch_limit_exceeded",
         agentId: agentId,
         handoverGenerated: taskHistory.length > 0,
-        alarmAt: isSingleAgent ? postHandoverStatus.alarmAt : undefined,
-        pairedWith: isPaired ? postHandoverStatus.pairedWith : undefined,
+        status: liveAgent?.status,
+        pairedWith: isPaired ? liveAgent.pairedWith : undefined,
         retrieveWith: { action: "get_handover", fleet_id: fleetId, agent_id: agentId },
-        message: isSingleAgent
-          ? `Auto-restart after rest. Alarm: ${postHandoverStatus.alarmAt}`
-          : "Call /api/white-room with action=initiate_handover to continue."
+        message: isPaired
+          ? `Handover in progress to ${liveAgent.pairedWith}. It will pick this up automatically on its next call.`
+          : "Handover in progress. Will auto-restart with compressed context once ready."
       }
     });
   }
